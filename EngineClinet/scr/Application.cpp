@@ -1,12 +1,13 @@
 #include "Application.h"
 #include "Time.h"
+#include "Renderer.h"
 
 namespace RT
 {
 	Application* Application::s_MainApp = nullptr;
 
 	Application::Application()
-		: m_ShouldRun{ true }, m_LastFrameDuration{ 0.f }, m_ViewportSize{}
+		: m_ShouldRun(true), m_LastFrameDuration(0.f), m_ViewportSize()
 	{
 		s_MainApp = this;
 
@@ -50,9 +51,13 @@ namespace RT
 
 			m_ViewportSize = ImGui::GetContentRegionAvail();
 			auto image = m_Renderer.GetRenderedImage();
-			auto imageSize = m_Renderer.GetSize();
-			if (imageSize.x != 0 && imageSize.y != 0)
-				;//ImGui::Image(image.data(), { (float)imageSize.x, (float)imageSize.y }, ImVec2(0, 1), ImVec2(1, 0));
+			if (image.GetWidth() != 0 && image.GetHeight() != 0)
+				ImGui::Image(
+					(void*)image.GetTexId(),
+					{ (float)image.GetWidth(), (float)image.GetHeight() },
+					ImVec2(0, 1),
+					ImVec2(1, 0)
+				);
 
 		ImGui::End();
 		ImGui::PopStyleVar();

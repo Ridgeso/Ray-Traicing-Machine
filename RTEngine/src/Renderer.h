@@ -1,7 +1,8 @@
 #pragma once
 #include <vector>
 #include <cstdint>
-#include <glm/glm.hpp>
+
+#include "Image.h"
 
 namespace RT::Render
 {
@@ -13,13 +14,15 @@ namespace RT::Render
 
 		void Render();
 		void OnResize(const int32_t width, const int32_t height);
-		glm::ivec2 GetSize() const { return m_Size; }
 
-		const std::vector<uint32_t>& GetRenderedImage() const { return m_Image; }
+		const Image& GetRenderedImage() const { return m_MainView; }
 
 	private:
-		glm::ivec2 m_Size;
-		std::vector<uint32_t> m_Image;
+		uint32_t m_FrameIndex;
+		uint32_t m_Seed;
+		Image m_MainView;
 	};
+	
+	uint32_t FastRandom(uint32_t& input);
 
 }

@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_glfw.h>
+#include <glad/glad.h>
 
 namespace RT::Instance
 {
@@ -22,6 +23,9 @@ namespace RT::Instance
         }
 
         glfwMakeContextCurrent(m_Window);
+
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+            return false;
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -55,6 +59,7 @@ namespace RT::Instance
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
 
+        glfwDestroyWindow(m_Window);
         glfwTerminate();
 	}
 
