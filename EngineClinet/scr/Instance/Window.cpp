@@ -23,6 +23,7 @@ namespace RT::Instance
         }
 
         glfwMakeContextCurrent(m_Window);
+        glfwSwapInterval(0);
 
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
             return false;

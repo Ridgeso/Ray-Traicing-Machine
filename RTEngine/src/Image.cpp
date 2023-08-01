@@ -4,12 +4,16 @@
 
 namespace RT::Render
 {
+	
+	Image::Image()
+		: m_Width(0), m_Height(0), m_TextureSlot(-1), m_TextureId(0)
+	{
+	}
 
 	Image::Image(int32_t width, int32_t height, const uint32_t* data, int32_t slot)
 		: m_Width(width), m_Height(height), m_TextureSlot(slot), m_TextureId(0)
 	{
-		if (data != nullptr)
-			InitTexture(data);
+		InitTexture(data);
 	}
 
 	void Image::Update(const uint32_t* data)

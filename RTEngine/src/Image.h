@@ -7,6 +7,7 @@ namespace RT::Render
 	class Image
 	{
 	public:
+		Image();
 		Image(int32_t width, int32_t height, const uint32_t* data, int32_t slot = 0);
 
 		void Update(const uint32_t* data);

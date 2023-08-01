@@ -53,7 +53,7 @@ namespace RT
 			auto image = m_Renderer.GetRenderedImage();
 			if (image.GetWidth() != 0 && image.GetHeight() != 0)
 				ImGui::Image(
-					(void*)image.GetTexId(),
+					(ImTextureID)image.GetTexId(),
 					{ (float)image.GetWidth(), (float)image.GetHeight() },
 					ImVec2(0, 1),
 					ImVec2(1, 0)
@@ -63,7 +63,7 @@ namespace RT
 		ImGui::PopStyleVar();
 
 		Timer timeit;
-		m_Renderer.OnResize(m_ViewportSize.x, m_ViewportSize.y);
+		m_Renderer.OnResize((int32_t)m_ViewportSize.x, (int32_t)m_ViewportSize.y);
 		m_Renderer.Render();
 		m_LastFrameDuration = timeit.Ellapsed();
 	}

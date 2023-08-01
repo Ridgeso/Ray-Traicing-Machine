@@ -1,13 +1,14 @@
 #pragma once
+#include <vector>
+#include <glm/glm.hpp>
 
 namespace RT::Render
 {
 
-	class Scene
+	struct Sphere
 	{
-	public:
-	private:
-
+		glm::vec3 position;
+		float radius;
 	};
 
 }
