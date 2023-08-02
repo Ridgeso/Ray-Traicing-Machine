@@ -26,6 +26,7 @@ namespace RT
 		ImVec2 m_ViewportSize;
 		Instance::Window m_MainWindow;
 		Render::Renderer m_Renderer;
+		Render::Scene m_Scene;
 
 		static Application* s_MainApp;
 	};

@@ -13,13 +13,13 @@ namespace RT::Render
 	public:
 		Renderer();
 
-		void Render();
+		void Render(const Scene& scene);
 		void OnResize(int32_t width, int32_t height);
 
 		const Image& GetRenderedImage() const { return m_MainView; }
 
 	private:
-		uint32_t PixelColor(glm::vec2 coord);
+		uint32_t PixelColor(glm::vec3 coord, const Sphere& sphere);
 
 	private:
 		uint32_t m_FrameIndex;

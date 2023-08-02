@@ -14,16 +14,19 @@ namespace RT::Render
         m_MainShpere.radius = 0.5f;
     }
 
-    void Renderer::Render()
+    void Renderer::Render(const Scene& scene)
     {
+        float uv = (float)m_MainView.GetWidth() / m_MainView.GetHeight();
+
         m_FrameIndex += 1;
         m_Seed += m_FrameIndex;
         for (int32_t y = 0; y < m_MainView.GetHeight(); y++)
         {
             for (int32_t x = 0; x < m_MainView.GetWidth(); x++)
             {
-                glm::vec2 coord = { (float)x / m_MainView.GetWidth(), (float)y / m_MainView.GetHeight() };
-                m_ViewCash[y * m_MainView.GetWidth() + x] = PixelColor(coord);
+                glm::vec3 coord = 2.0f * glm::vec3((float)x / m_MainView.GetWidth(), (float)y / m_MainView.GetHeight(), -1.0) - 1.0f;
+                coord.x *= uv;
+                m_ViewCash[y * m_MainView.GetWidth() + x] = PixelColor(coord, scene.Spheres[0]);
             }
         }
         m_MainView.Update(m_ViewCash);
@@ -40,12 +43,26 @@ namespace RT::Render
         }
     }
 
-    uint32_t Renderer::PixelColor(glm::vec2 coord)
+    uint32_t Renderer::PixelColor(glm::vec3 coord, const Sphere& sphere)
     {
-        uint8_t r = (uint8_t)(coord.x * 255.f);
-        uint8_t g = (uint8_t)(coord.y * 255.f);
+        glm::vec3 pos = { 0, 0, 2 };
+        glm::vec3 origin = pos - sphere.position;
 
-        return 0xff000000 | (g << 8) | r;
+        float a = glm::dot(coord, coord);
+        float b = 2 * glm::dot(origin, coord);
+        float c = glm::dot(origin, origin) - sphere.radius * sphere.radius;
+
+        float delta = b * b - 4 * a * c;
+
+        if (delta >= 0)
+        {
+            uint8_t r = (uint8_t)(sphere.color.x * 255.f);
+            uint8_t g = (uint8_t)(sphere.color.y * 255.f);
+            uint8_t b = (uint8_t)(sphere.color.z * 255.f);
+            return 0xff000000 | (b << 16) | (g << 8) | r;
+        }
+
+        return 0xff000000;
     }
 
     static inline uint32_t pcg_hash(uint32_t input)
