@@ -15,7 +15,7 @@ namespace RT
 
         m_ShouldRun &= m_MainWindow.Init();
 
-		m_Scene.Spheres.emplace_back(Render::Sphere{ { 0.0, 0.0, -2.0 }, 1.0f, { 1.0, 0.2, 1.0 } });
+		m_Scene.Spheres.emplace_back(Render::Sphere{ { 0.0f, 0.0f, -2.0f }, 1.0f, { 1.0f, 0.2f, 1.0f, 1.0f } });
 	}
 
 	Application::~Application()
@@ -55,7 +55,7 @@ namespace RT
 		
 		for (size_t i = 0; i < m_Scene.Spheres.size(); i++)
 		{
-			ImGui::PushID(i);
+			ImGui::PushID((int32_t)i);
 			Render::Sphere& sphere = m_Scene.Spheres[i];
 
 			ImGui::DragFloat3("Position", glm::value_ptr(sphere.position), 0.1f);

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <cstdint>
+#include <glm/glm.hpp>
 
 #include "Image.h"
 #include "Scene.h"
@@ -19,17 +20,15 @@ namespace RT::Render
 		const Image& GetRenderedImage() const { return m_MainView; }
 
 	private:
-		uint32_t PixelColor(glm::vec3 coord, const Sphere& sphere);
+		glm::vec4 PixelColor(glm::vec3 coord, const Sphere& sphere);
 
 	private:
 		uint32_t m_FrameIndex;
 		uint32_t m_Seed;
 		Image m_MainView;
-		uint32_t* m_ViewCash;
-
-		Sphere m_MainShpere;
+		std::vector<glm::vec4> m_ViewCash;
 	};
 	
-	uint32_t FastRandom(uint32_t& input);
+	float FastRandom(uint32_t& input);
 
 }

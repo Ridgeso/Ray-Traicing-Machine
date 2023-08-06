@@ -6,20 +6,25 @@ namespace RT::Render
 {
 	
 	Image::Image()
-		: m_Width(0), m_Height(0), m_TextureSlot(-1), m_TextureId(0)
+		: m_Width(0), m_Height(0), m_Format(Format::None), m_TextureSlot(-1), m_TextureId(0)
 	{
 	}
 
-	Image::Image(int32_t width, int32_t height, const uint32_t* data, int32_t slot)
-		: m_Width(width), m_Height(height), m_TextureSlot(slot), m_TextureId(0)
+	Image::Image(int32_t width, int32_t height, Format format, const void* data, int32_t slot)
+		: m_Width(width), m_Height(height), m_Format(format), m_TextureSlot(slot), m_TextureId(0)
 	{
 		InitTexture(data);
 	}
 
-	void Image::Update(const uint32_t* data)
+	Image::~Image()
+	{
+		glDeleteTextures(1, &m_TextureId);
+	}
+
+	void Image::Update(const void* data)
 	{
 		glBindTexture(GL_TEXTURE_2D, m_TextureId);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Width, m_Height, 0, GL_RGBA, (uint32_t)m_Format, data);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
@@ -37,7 +42,7 @@ namespace RT::Render
 		return m_TextureId;
 	}
 
-	void Image::InitTexture(const uint32_t* data)
+	void Image::InitTexture(const void* data)
 	{
 		glActiveTexture(GL_TEXTURE0 + m_TextureSlot);
 		glGenTextures(1, &m_TextureId);
@@ -48,7 +53,7 @@ namespace RT::Render
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_Width, m_Height, 0, GL_RGBA, (uint32_t)m_Format, data);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}

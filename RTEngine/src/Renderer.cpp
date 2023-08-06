@@ -1,6 +1,5 @@
 ﻿#include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
 
 #include "Renderer.h"
 
@@ -8,10 +7,9 @@ namespace RT::Render
 {
     
     Renderer::Renderer()
-        : m_FrameIndex(0), m_Seed(0), m_MainView(), m_ViewCash(nullptr)
+        : m_FrameIndex(0), m_Seed(0), m_MainView(), m_ViewCash()
     {
-        m_MainShpere.position = { 0.f, 0.f, 10.f };
-        m_MainShpere.radius = 0.5f;
+        m_MainView.SetFormat(Image::Format::RGBA32F);
     }
 
     void Renderer::Render(const Scene& scene)
@@ -29,7 +27,7 @@ namespace RT::Render
                 m_ViewCash[y * m_MainView.GetWidth() + x] = PixelColor(coord, scene.Spheres[0]);
             }
         }
-        m_MainView.Update(m_ViewCash);
+        m_MainView.Update(m_ViewCash.data());
     }
 
     void Renderer::OnResize(int32_t width, int32_t height)
@@ -38,12 +36,11 @@ namespace RT::Render
         {
             m_FrameIndex = 0;
             m_MainView.Resize(width, height);
-            delete[] m_ViewCash;
-            m_ViewCash = new uint32_t[m_MainView.GetWidth() * m_MainView.GetHeight()];
+            m_ViewCash.resize(m_MainView.GetWidth() * m_MainView.GetHeight());
         }
     }
 
-    uint32_t Renderer::PixelColor(glm::vec3 coord, const Sphere& sphere)
+    glm::vec4 Renderer::PixelColor(glm::vec3 coord, const Sphere& sphere)
     {
         glm::vec3 pos = { 0, 0, 2 };
         glm::vec3 origin = pos - sphere.position;
@@ -54,15 +51,19 @@ namespace RT::Render
 
         float delta = b * b - 4 * a * c;
 
-        if (delta >= 0)
+        if (delta < 0)
         {
-            uint8_t r = (uint8_t)(sphere.color.x * 255.f);
-            uint8_t g = (uint8_t)(sphere.color.y * 255.f);
-            uint8_t b = (uint8_t)(sphere.color.z * 255.f);
-            return 0xff000000 | (b << 16) | (g << 8) | r;
+            return { 0.0f, 0.0f, 0.0f, 1.0f };
         }
 
-        return 0xff000000;
+        float t = (-b - glm::sqrt(delta)) / (2.0f * a);
+        glm::vec3 hitPos = pos + t * coord;
+        glm::vec3 sphereNormal = glm::normalize(hitPos - sphere.position);
+
+        glm::vec3 lightDir = glm::normalize(glm::vec3(-1, -1, -1));
+        float intensity = glm::clamp(glm::dot(sphereNormal, -lightDir), 0.0f, 1.0f);
+
+        return sphere.color * intensity;
     }
 
     static inline uint32_t pcg_hash(uint32_t input)
@@ -72,10 +73,10 @@ namespace RT::Render
         return (word >> 22u) ^ word;
     }
 
-    uint32_t FastRandom(uint32_t& seed)
+    float FastRandom(uint32_t& seed)
     {
         seed = pcg_hash(seed);
-        return seed;
+        return (float)seed / std::numeric_limits<float>::max();
     }
 
 }
