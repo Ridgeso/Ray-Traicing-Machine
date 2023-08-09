@@ -96,6 +96,31 @@ namespace RT::Instance
         }
     }
 
+    glm::vec2 Window::GetMousePos() const
+    {
+        glm::dvec2 mousePos;
+        glfwGetCursorPos(m_Window, &mousePos.x, &mousePos.y);
+        return mousePos;
+    }
+
+    bool Window::IsKeyPressed(int32_t key) const
+    {
+        return glfwGetKey(m_Window, key) == GLFW_PRESS;
+    }
+
+    bool Window::IsMousePressed(int32_t key) const
+    {
+        return glfwGetMouseButton(m_Window, key) == GLFW_PRESS;
+    }
+
+    void Window::LockCursor(bool state) const
+    {
+        if (state)
+            glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        else
+            glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+
 	bool Window::PullEvents()
 	{
 		return true;
