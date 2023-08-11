@@ -7,26 +7,27 @@ namespace RT::Render
 
 	struct Ray
 	{
-		glm::vec3 origin;
-		glm::vec3 direction;
+		glm::vec3 Origin;
+		glm::vec3 Direction;
 	};
 
-	struct Payload
+	struct Material
 	{
-		glm::vec4 colour;
-		float hitDistance;
-		int32_t objectId;
+		glm::vec3 Albedo;
+		float Roughness;
+		float Metalic;
 	};
 
 	struct Sphere
 	{
-		glm::vec3 position;
-		float radius;
-		glm::vec4 color;
+		glm::vec3 Position;
+		float Radius;
+		int32_t MaterialId;
 	};
 
 	struct Scene
 	{
+		std::vector<Material> Materials;
 		std::vector<Sphere> Spheres;
 	};
 

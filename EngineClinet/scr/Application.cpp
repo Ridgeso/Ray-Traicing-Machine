@@ -17,8 +17,14 @@ namespace RT
 
         m_ShouldRun &= m_MainWindow.Init();
 
-		m_Scene.Spheres.emplace_back(Render::Sphere{ { 0.0f, 0.0f, -2.0f }, 1.0f, { 1.0f, 0.2f, 1.0f, 1.0f } });
-		m_Scene.Spheres.emplace_back(Render::Sphere{ { 2.0f, 0.0f, -2.0f }, 1.0f, { 0.2f, 0.5f, 0.7f, 1.0f } });
+		m_Scene.Materials.emplace_back(Render::Material{ { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f });
+		m_Scene.Materials.emplace_back(Render::Material{ { 1.0f, 0.2f, 1.0f }, 0.7f, 0.8f });
+		m_Scene.Materials.emplace_back(Render::Material{ { 0.2f, 0.5f, 0.7f }, 0.2f, 0.3f });
+		m_Scene.Materials.emplace_back(Render::Material{ { 0.8f, 0.6f, 0.5f }, 0.7f, 0.3f });
+		
+		m_Scene.Spheres.emplace_back(Render::Sphere{ { 0.0f, 0.0f, -2.0f }, 1.0f, 1 });
+		m_Scene.Spheres.emplace_back(Render::Sphere{ { 0.0f, -2001.0f, -2.0f }, 2000.0f, 2 });
+		m_Scene.Spheres.emplace_back(Render::Sphere{ { 2.5f, 0.0f, -2.0f }, 1.0f, 3 });
 	
 		m_LastMousePos = glm::vec2(0);
 	}
@@ -49,20 +55,38 @@ namespace RT
 		ImGui::Begin("Settings");
 		ImGui::Text("App frame took: %.3fms", m_AppFrameDuration);
 		ImGui::Text("Last render took: %.3fms", m_LastFrameDuration);
-		if (ImGui::Button("Render"))
-		{ }
+		if (ImGui::Button("Reset"))
+			m_Renderer.ResetFrame();
+		ImGui::Checkbox("Accumulate", &m_Renderer.Accumulate);
 		ImGui::End();
 
 		ImGui::Begin("Scene");
 		
+		ImGui::Text("Materials:");
+		for (size_t i = 1; i < m_Scene.Materials.size(); i++)
+		{
+			ImGui::PushID((int32_t)i);
+			Render::Material& material = m_Scene.Materials[i];
+
+			ImGui::ColorEdit3("Albedo", glm::value_ptr(material.Albedo));
+			ImGui::DragFloat("Roughness", &material.Roughness, 0.005f, 0.0f, 1.0f);
+			ImGui::DragFloat("Metalic", &material.Metalic, 0.005f, 0.0f, 1.0f);
+
+			ImGui::Separator();
+			ImGui::PopID();
+		}
+		
+		ImGui::Separator();
+
+		ImGui::Text("Spheres:");
 		for (size_t i = 0; i < m_Scene.Spheres.size(); i++)
 		{
 			ImGui::PushID((int32_t)i);
 			Render::Sphere& sphere = m_Scene.Spheres[i];
 
-			ImGui::DragFloat3("Position", glm::value_ptr(sphere.position), 0.1f);
-			ImGui::DragFloat("Radius", &sphere.radius, 0.1f);
-			ImGui::ColorEdit3("Color", glm::value_ptr(sphere.color));
+			ImGui::DragFloat3("Position", glm::value_ptr(sphere.Position), 0.1f);
+			ImGui::DragFloat("Radius", &sphere.Radius, 0.1f);
+			ImGui::SliderInt("Material", &sphere.MaterialId, 1, m_Scene.Materials.size() - 1);
 
 			ImGui::Separator();
 			ImGui::PopID();
@@ -75,6 +99,9 @@ namespace RT
 
 		m_ViewportSize = ImGui::GetContentRegionAvail();
 		auto& image = m_Renderer.GetRenderedImage();
+		if ((int32_t)m_ViewportSize.x != image.GetWidth() || (int32_t)m_ViewportSize.y != image.GetHeight())
+			m_Renderer.ResetFrame();
+
 		ImGui::Image(
 			(ImTextureID)image.GetTexId(),
 			{ (float)image.GetWidth(), (float)image.GetHeight() },
@@ -173,6 +200,7 @@ namespace RT
 		{
 			m_Camera.RecalculateInvView();
 			m_Camera.RecalculateCashedCoords();
+			m_Renderer.ResetFrame();
 		}
 	}
 
