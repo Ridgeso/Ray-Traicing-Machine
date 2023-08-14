@@ -5,7 +5,6 @@
 #include <glm/glm.hpp>
 
 #include "Camera.h"
-#include "Image.h"
 #include "Scene.h"
 
 namespace RT::Render
@@ -16,42 +15,45 @@ namespace RT::Render
 	public:
 		Renderer();
 
+		bool Invalidate(int32_t width, int32_t height);
+		void Devalidate();
+
 		void OnResize(int32_t width, int32_t height);
+		bool RecreateRenderer(int32_t width, int32_t height);
 		void Render(const Camera& camera, const Scene& scene);
 
-		const Image& GetRenderedImage() const { return m_MainView; }
 		void ResetFrame() { m_FrameIndex = 0; }
 
-	private:
-		struct Payload
-		{
-			glm::vec4 Color;
-			glm::vec3 HitPosition;
-			glm::vec3 HitNormal;
-			float HitDistance;
-			int32_t ObjectId;
-		};
-
-		glm::vec4 PixelColor(glm::ivec2 pixel) const;
-		Payload TraceRay(const Ray& ray) const;
-		Payload ClosestHit(const Ray& ray, int32_t objectId, float hitDistance) const;
-		Payload Miss(const Ray& ray) const;
+		int32_t GetWidth() const { return m_RenderSize.x; }
+		int32_t GetHeight() const { return m_RenderSize.y; }
+		int32_t GetDescriptor() const { return m_RenderId; }
 
 	public:
 		bool Accumulate;
 
 	private:
-		Image m_MainView;
+		void CompileShader(uint32_t shaderID, const std::string& source) const;
+
+	private:
 		uint32_t m_FrameIndex;
-		std::vector<glm::vec4> m_ViewCash;
-		std::vector<glm::vec4> m_AccumulatedView;
 
-		const Camera* m_ActiveCamera;
-		const Scene* m_ActiveScene;
-
-		std::vector<int32_t> m_CashedCoord;
+		glm::ivec2 m_SpecSize;
+		glm::ivec2 m_RenderSize;
+		uint32_t m_RenderId;
+		uint32_t m_ScreenBuffer, m_FrameBufferId, m_RenderBuffer, m_Program;
+		
+		struct Vertices
+		{
+			float Coords[2];
+			float TexCoords[2];
+		} static constexpr s_Screen[] = {
+			{ { -1.0f, -1.0f }, { -1.0f, -1.0f } },
+			{ {  1.0f, -1.0f }, {  1.0f, -1.0f } },
+			{ {  1.0f,  1.0f }, {  1.0f,  1.0f } },
+			{ {  1.0f,  1.0f }, {  1.0f,  1.0f } },
+			{ { -1.0f,  1.0f }, { -1.0f,  1.0f } },
+			{ { -1.0f, -1.0f }, { -1.0f, -1.0f } }
+		};
 	};
-	
-	float FastRandom(uint32_t& input);
 
 }

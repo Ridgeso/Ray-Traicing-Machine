@@ -25,10 +25,14 @@ namespace RT::Instance
 		glm::vec2 GetMousePos() const;
 		bool IsKeyPressed(int32_t key) const;
 		bool IsMousePressed(int32_t key) const;
+		glm::ivec2 GetSize() const;
 
 		void LockCursor(bool state) const;
 
 		GLFWwindow* GetNativeWindow() { return m_Window; }
+
+	private:
+		void WindowResize();
 
 	private:
 		int32_t m_Width = 0, m_Height = 0;

@@ -5,12 +5,6 @@
 namespace RT::Render
 {
 
-	struct Ray
-	{
-		glm::vec3 Origin;
-		glm::vec3 Direction;
-	};
-
 	struct Material
 	{
 		glm::vec3 Albedo;

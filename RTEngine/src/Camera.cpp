@@ -7,7 +7,7 @@ namespace RT::Render
 	const glm::vec3 Camera::c_Up = glm::vec3(0, 1, 0);
 
 	Camera::Camera(float fov, float near, float far)
-		: m_Fov(fov), m_Near(near), m_Far(far), m_ViewWidth(0), m_ViewHeight(0)
+		: m_Fov(fov), m_Near(near), m_Far(far), m_ViewSize(0)
 		, m_InvProjection(0), m_InvView(0)
 	{
 		m_Position = glm::vec3(0, 0, 5);
@@ -18,7 +18,7 @@ namespace RT::Render
 
 	void Camera::RecalculateInvProjection()
 	{
-		glm::mat4 projection = glm::perspectiveFov(glm::radians(45.0f), (float)m_ViewWidth, (float)m_ViewHeight, m_Near, m_Far);
+		glm::mat4 projection = glm::perspectiveFov(glm::radians(45.0f), (float)m_ViewSize.x, (float)m_ViewSize.y, m_Near, m_Far);
 		m_InvProjection = glm::inverse(projection);
 	}
 
@@ -28,33 +28,13 @@ namespace RT::Render
 		m_InvView = glm::inverse(view);
 	}
 
-	void Camera::ResizeCamera(float width, float height)
+	void Camera::ResizeCamera(int32_t width, int32_t height)
 	{
-		if (m_ViewWidth == width && m_ViewHeight == height)
+		if (m_ViewSize.x == width && m_ViewSize.y == height)
 			return;
 
-		m_ViewWidth = width;
-		m_ViewHeight = height;
-
+		m_ViewSize = { width, height };
 		RecalculateInvProjection();
-		RecalculateCashedCoords();
-	}
-
-	void Camera::RecalculateCashedCoords()
-	{
-		m_CashedCoord.resize(m_ViewWidth * m_ViewHeight);
-		for (int32_t y = 0; y < m_ViewHeight; y++)
-		{
-			for (int32_t x = 0; x < m_ViewWidth; x++)
-			{
-				glm::vec4 coord = 2.0f * glm::vec4((float)x / m_ViewWidth, (float)y / m_ViewHeight, 1, 1) - 1.0f;
-				coord = m_InvProjection * coord;
-
-				glm::vec3 rayDirection = glm::vec3(m_InvView * glm::vec4(glm::normalize(glm::vec3(coord) / coord.w), 0));
-
-				m_CashedCoord[y * m_ViewWidth + x] = rayDirection;
-			}
-		}
 	}
 
 }

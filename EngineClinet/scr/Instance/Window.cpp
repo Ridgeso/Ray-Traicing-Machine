@@ -72,6 +72,12 @@ namespace RT::Instance
 		return !glfwWindowShouldClose(m_Window);
 	}
 
+    bool Window::PullEvents()
+    {
+        WindowResize();
+        return true;
+    }
+
     void Window::BeginUI()
     {
         ImGui_ImplOpenGL3_NewFrame();
@@ -113,6 +119,13 @@ namespace RT::Instance
         return glfwGetMouseButton(m_Window, key) == GLFW_PRESS;
     }
 
+    glm::ivec2 Window::GetSize() const
+    {
+        int32_t width, height;
+        glfwGetWindowSize(m_Window, &width, &height);
+        return { width, height };
+    }
+
     void Window::LockCursor(bool state) const
     {
         if (state)
@@ -121,9 +134,15 @@ namespace RT::Instance
             glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
-	bool Window::PullEvents()
-	{
-		return true;
-	}
+    void Window::WindowResize()
+    {
+        glm::ivec2 winSize = GetSize();
+        if (winSize.x != m_Width || winSize.y != m_Height)
+        {
+            m_Width = winSize.x;
+            m_Height = winSize.y;
+            glViewport(0, 0, m_Width, m_Height);
+        }
+    }
 
 }

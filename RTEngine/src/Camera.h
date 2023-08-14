@@ -25,9 +25,7 @@ namespace RT::Render
 		void RecalculateInvProjection();
 		void RecalculateInvView();
 
-		void ResizeCamera(float width, float height);
-		void RecalculateCashedCoords();
-		const std::vector<glm::vec3>& GetCoords() const { return m_CashedCoord; }
+		void ResizeCamera(int32_t width, int32_t height);
 
 	private:
 		glm::vec3 m_Position;
@@ -37,9 +35,7 @@ namespace RT::Render
 		glm::mat4 m_InvView;
 
 		float m_Fov, m_Near, m_Far;
-		int32_t m_ViewWidth, m_ViewHeight;
-
-		std::vector<glm::vec3> m_CashedCoord;
+		glm::ivec2 m_ViewSize;
 
 		static const glm::vec3 c_Up;
 	};

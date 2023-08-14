@@ -8,6 +8,7 @@
 
 namespace RT
 {
+
 	Application* Application::s_MainApp = nullptr;
 
 	Application::Application()
@@ -16,6 +17,8 @@ namespace RT
 		s_MainApp = this;
 
         m_ShouldRun &= m_MainWindow.Init();
+		glm::ivec2 windowSize = m_MainWindow.GetSize();
+		m_ShouldRun &= m_Renderer.Invalidate(windowSize.x, windowSize.y);
 
 		m_Scene.Materials.emplace_back(Render::Material{ { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f });
 		m_Scene.Materials.emplace_back(Render::Material{ { 1.0f, 0.2f, 1.0f }, 0.7f, 0.8f });
@@ -32,6 +35,7 @@ namespace RT
 	Application::~Application()
 	{
 		m_MainWindow.Destroy();
+		m_Renderer.Devalidate();
 	}
 
 	void Application::Run()
@@ -98,13 +102,10 @@ namespace RT
 		ImGui::Begin("Viewport");
 
 		m_ViewportSize = ImGui::GetContentRegionAvail();
-		auto& image = m_Renderer.GetRenderedImage();
-		if ((int32_t)m_ViewportSize.x != image.GetWidth() || (int32_t)m_ViewportSize.y != image.GetHeight())
-			m_Renderer.ResetFrame();
 
 		ImGui::Image(
-			(ImTextureID)image.GetTexId(),
-			{ (float)image.GetWidth(), (float)image.GetHeight() },
+			(ImTextureID)m_Renderer.GetDescriptor(),
+			{ (float)m_Renderer.GetWidth(), (float)m_Renderer.GetHeight() },
 			ImVec2(0, 1),
 			ImVec2(1, 0)
 		);
@@ -116,12 +117,13 @@ namespace RT
 	void Application::Render()
 	{
 		UpdateView(m_LastFrameDuration / 1000.0f);
-		Timer timeit;
+		glm::ivec2 winSize = m_MainWindow.GetSize();
+		m_Renderer.RecreateRenderer(winSize.x, winSize.y);
 
+		Timer timeit;
 		m_Renderer.OnResize((int32_t)m_ViewportSize.x, (int32_t)m_ViewportSize.y);
 		m_Camera.ResizeCamera((int32_t)m_ViewportSize.x, (int32_t)m_ViewportSize.y);
 		m_Renderer.Render(m_Camera, m_Scene);
-
 		m_LastFrameDuration = timeit.Ellapsed();
 	}
 
@@ -178,7 +180,6 @@ namespace RT
 			moved = true;
 		}
 
-		
 		if (m_MainWindow.IsMousePressed(GLFW_MOUSE_BUTTON_RIGHT))
 		{
 			m_MainWindow.LockCursor(true);
@@ -199,7 +200,6 @@ namespace RT
 		if (moved)
 		{
 			m_Camera.RecalculateInvView();
-			m_Camera.RecalculateCashedCoords();
 			m_Renderer.ResetFrame();
 		}
 	}

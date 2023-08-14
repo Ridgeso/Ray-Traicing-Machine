@@ -92,7 +92,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)scr;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glad\include;$(SolutionDir)Dependencies\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -132,7 +132,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)scr;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glad\include;$(SolutionDir)Dependencies\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -164,14 +164,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Camera.cpp" />
-    <ClCompile Include="src\Image.cpp" />
     <ClCompile Include="src\impl\gladImpl.cpp" />
     <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera.h" />
-    <ClInclude Include="src\Image.h" />
     <ClInclude Include="src\Scene.h" />
     <ClInclude Include="src\Renderer.h" />
   </ItemGroup>
