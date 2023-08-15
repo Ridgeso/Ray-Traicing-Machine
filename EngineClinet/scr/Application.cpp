@@ -5,6 +5,7 @@
 #include "Application.h"
 #include "Time.h"
 #include "Renderer.h"
+#include <iostream>
 
 namespace RT
 {
@@ -59,6 +60,7 @@ namespace RT
 		ImGui::Begin("Settings");
 		ImGui::Text("App frame took: %.3fms", m_AppFrameDuration);
 		ImGui::Text("Last render took: %.3fms", m_LastFrameDuration);
+		ImGui::Text("Frames: %d", m_Renderer.GetFrames());
 		if (ImGui::Button("Reset"))
 			m_Renderer.ResetFrame();
 		ImGui::Checkbox("Accumulate", &m_Renderer.Accumulate);
@@ -89,7 +91,7 @@ namespace RT
 			Render::Sphere& sphere = m_Scene.Spheres[i];
 
 			ImGui::DragFloat3("Position", glm::value_ptr(sphere.Position), 0.1f);
-			ImGui::DragFloat("Radius", &sphere.Radius, 0.1f);
+			ImGui::DragFloat("Radius", &sphere.Radius, 0.01f, 0.0f, std::numeric_limits<float>::max());
 			ImGui::SliderInt("Material", &sphere.MaterialId, 1, m_Scene.Materials.size() - 1);
 
 			ImGui::Separator();
@@ -101,11 +103,16 @@ namespace RT
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin("Viewport");
 
-		m_ViewportSize = ImGui::GetContentRegionAvail();
+		ImVec2 viewPort = ImGui::GetContentRegionAvail();
+		if (viewPort.x != m_ViewportSize.x || viewPort.y != m_ViewportSize.y)
+		{
+			m_ViewportSize = viewPort;
+			m_Renderer.ResetFrame();
+		}
 
 		ImGui::Image(
 			(ImTextureID)m_Renderer.GetDescriptor(),
-			{ (float)m_Renderer.GetWidth(), (float)m_Renderer.GetHeight() },
+			m_ViewportSize,
 			ImVec2(0, 1),
 			ImVec2(1, 0)
 		);
@@ -116,12 +123,11 @@ namespace RT
 
 	void Application::Render()
 	{
-		UpdateView(m_LastFrameDuration / 1000.0f);
+		UpdateView(m_AppFrameDuration / 1000.0f);
 		glm::ivec2 winSize = m_MainWindow.GetSize();
 		m_Renderer.RecreateRenderer(winSize.x, winSize.y);
 
 		Timer timeit;
-		m_Renderer.OnResize((int32_t)m_ViewportSize.x, (int32_t)m_ViewportSize.y);
 		m_Camera.ResizeCamera((int32_t)m_ViewportSize.x, (int32_t)m_ViewportSize.y);
 		m_Renderer.Render(m_Camera, m_Scene);
 		m_LastFrameDuration = timeit.Ellapsed();
@@ -183,7 +189,7 @@ namespace RT
 		if (m_MainWindow.IsMousePressed(GLFW_MOUSE_BUTTON_RIGHT))
 		{
 			m_MainWindow.LockCursor(true);
-			if (mouseDelta.x != 0.f || mouseDelta.y != 0.f)
+			if (mouseDelta != glm::vec2(0.0f))
 			{
 				mouseDelta *= rotationSpeed;
 				glm::quat q = glm::normalize(glm::cross(

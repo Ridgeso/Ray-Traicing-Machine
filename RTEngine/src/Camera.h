@@ -9,18 +9,30 @@ namespace RT::Render
 	class Camera
 	{
 	public:
+		#pragma pack(1)
+		struct Spec
+		{
+			glm::mat4 InvProjection;
+			glm::mat4 InvView;
+			glm::vec3 Position;
+			float padding[1];
+		};
+
+	public:
 		Camera(float fov, float near, float far);
-	
-		const glm::vec3& GetPosition() const { return m_Position; }
-		glm::vec3& GetPosition() { return m_Position; }
-		void SetPosition(const glm::vec3& newPos) { m_Position = newPos; }
+
+		const glm::vec3& GetPosition() const { return m_Spec.Position; }
+		glm::vec3& GetPosition() { return m_Spec.Position; }
+		void SetPosition(const glm::vec3& newPos) { m_Spec.Position = newPos; }
 
 		const glm::vec3& GetDirection() const { return m_Direction; }
 		glm::vec3& GetDirection() { return m_Direction; }
 		void SetDirection(const glm::vec3& newDir) { m_Direction = newDir; }
 
-		const glm::mat4& GetInvProjection() const { return m_InvProjection; }
-		const glm::mat4& GetInvView() const { return m_InvView; }
+		const glm::mat4& GetInvProjection() const { return m_Spec.InvProjection; }
+		const glm::mat4& GetInvView() const { return m_Spec.InvView; }
+
+		const Spec& GetSpec() const { return m_Spec; }
 
 		void RecalculateInvProjection();
 		void RecalculateInvView();
@@ -28,11 +40,8 @@ namespace RT::Render
 		void ResizeCamera(int32_t width, int32_t height);
 
 	private:
-		glm::vec3 m_Position;
+		Spec m_Spec;
 		glm::vec3 m_Direction;
-
-		glm::mat4 m_InvProjection;
-		glm::mat4 m_InvView;
 
 		float m_Fov, m_Near, m_Far;
 		glm::ivec2 m_ViewSize;

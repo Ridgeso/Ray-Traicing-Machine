@@ -18,11 +18,11 @@ namespace RT::Render
 		bool Invalidate(int32_t width, int32_t height);
 		void Devalidate();
 
-		void OnResize(int32_t width, int32_t height);
 		bool RecreateRenderer(int32_t width, int32_t height);
 		void Render(const Camera& camera, const Scene& scene);
 
 		void ResetFrame() { m_FrameIndex = 0; }
+		uint32_t GetFrames() const { return m_FrameIndex; }
 
 		int32_t GetWidth() const { return m_RenderSize.x; }
 		int32_t GetHeight() const { return m_RenderSize.y; }
@@ -39,20 +39,24 @@ namespace RT::Render
 
 		glm::ivec2 m_SpecSize;
 		glm::ivec2 m_RenderSize;
-		uint32_t m_RenderId;
-		uint32_t m_ScreenBuffer, m_FrameBufferId, m_RenderBuffer, m_Program;
-		
+		uint32_t m_AccumulationId = 0, m_RenderId = 0;
+		uint32_t m_ScreenBuffer = 0, m_FrameBufferId = 0, m_RenderBuffer = 0, m_Program = 0;
+
+		int32_t u_AccumulationTexture = 0, u_ScreenTexture = 0;
+		int32_t u_FrameIndex = 0, u_Resolution = 0, u_MaterialsCount = 0, u_SpheresCount = 0;
+		uint32_t u_CameraStorage = 0, u_MaterialsStorage = 1, u_SpheresStorage= 2;
+
 		struct Vertices
 		{
 			float Coords[2];
 			float TexCoords[2];
 		} static constexpr s_Screen[] = {
-			{ { -1.0f, -1.0f }, { -1.0f, -1.0f } },
-			{ {  1.0f, -1.0f }, {  1.0f, -1.0f } },
-			{ {  1.0f,  1.0f }, {  1.0f,  1.0f } },
-			{ {  1.0f,  1.0f }, {  1.0f,  1.0f } },
-			{ { -1.0f,  1.0f }, { -1.0f,  1.0f } },
-			{ { -1.0f, -1.0f }, { -1.0f, -1.0f } }
+			{ { -1.0f, -1.0f }, { 0.0f, 0.0f } },
+			{ {  1.0f, -1.0f }, { 1.0f, 0.0f } },
+			{ {  1.0f,  1.0f }, { 1.0f, 1.0f } },
+			{ {  1.0f,  1.0f }, { 1.0f, 1.0f } },
+			{ { -1.0f,  1.0f }, { 0.0f, 1.0f } },
+			{ { -1.0f, -1.0f }, { 0.0f, 0.0f } }
 		};
 	};
 

@@ -8,10 +8,10 @@ namespace RT::Render
 
 	Camera::Camera(float fov, float near, float far)
 		: m_Fov(fov), m_Near(near), m_Far(far), m_ViewSize(0)
-		, m_InvProjection(0), m_InvView(0)
 	{
-		m_Position = glm::vec3(0, 0, 5);
+		m_Spec.Position = glm::vec3(0, 0, 5);
 		m_Direction = glm::vec3(0, 0, -1);
+		m_Spec.InvProjection = glm::mat4(0);
 
 		RecalculateInvView();
 	}
@@ -19,13 +19,13 @@ namespace RT::Render
 	void Camera::RecalculateInvProjection()
 	{
 		glm::mat4 projection = glm::perspectiveFov(glm::radians(45.0f), (float)m_ViewSize.x, (float)m_ViewSize.y, m_Near, m_Far);
-		m_InvProjection = glm::inverse(projection);
+		m_Spec.InvProjection = glm::inverse(projection);
 	}
 
 	void Camera::RecalculateInvView()
 	{
-		glm::mat4 view = glm::lookAt(m_Position, m_Position + m_Direction, c_Up);
-		m_InvView = glm::inverse(view);
+		glm::mat4 view = glm::lookAt(m_Spec.Position, m_Spec.Position + m_Direction, c_Up);
+		m_Spec.InvView= glm::inverse(view);
 	}
 
 	void Camera::ResizeCamera(int32_t width, int32_t height)
