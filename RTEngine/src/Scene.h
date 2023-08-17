@@ -14,9 +14,13 @@ namespace RT::Render
 	struct Material
 	{
 		glm::vec3 Albedo;
+		glm::vec3 EmmisionColor;
 		float Roughness;
 		float Metalic;
+		float EmmisionPower;
 	};
+
+	glm::vec3 GetEmmision(const Material& mat);
 
 	struct Sphere
 	{

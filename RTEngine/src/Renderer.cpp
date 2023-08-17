@@ -61,7 +61,7 @@ namespace RT::Render
 
     glm::vec4 Renderer::PixelColor(glm::ivec2 pixel) const
     {
-        constexpr int32_t maxBounces = 5;
+        constexpr int32_t maxBounces = 6;
         uint32_t localSeed = ((pixel.y * m_MainView.GetWidth() + pixel.x) << 4 ^ 1252314u) * m_FrameIndex;
 
         Ray ray = { 
@@ -69,17 +69,17 @@ namespace RT::Render
             m_ActiveCamera->GetCoords()[pixel.y * m_MainView.GetWidth() + pixel.x]
         };
 
-        glm::vec4 finalColor = glm::vec4(0);
+        glm::vec3 finalColor = glm::vec3(0);
         glm::vec3 contribution = glm::vec3(1);
 
-        for (int32_t i = 0; i < maxBounces; i++)
+        for (int32_t i = 1; i < maxBounces; i++)
         {
             Payload payload = TraceRay(ray);
-            localSeed += i;
+            localSeed *= i;
 
             if (payload.ObjectId == -1)
             {
-                finalColor = finalColor + payload.Color * glm::vec4(contribution, 1);
+                finalColor = finalColor + glm::vec3(payload.Color) * contribution;
                 break;
             }
 
@@ -87,6 +87,8 @@ namespace RT::Render
             const Material& sphereMaterial = m_ActiveScene->Materials[closestSphere.MaterialId];
 
             contribution *= sphereMaterial.Albedo;
+            finalColor += GetEmmision(sphereMaterial);
+
             ray.Origin = payload.HitPosition + payload.HitNormal * 0.0001f;
 
             //glm::vec3 unitSphere = glm::vec3(FastRandom(localSeed), FastRandom(localSeed), FastRandom(localSeed)) - 0.5f;
@@ -94,7 +96,7 @@ namespace RT::Render
             glm::vec3 unitSphere = 2.0f * glm::vec3(FastRandom(localSeed), FastRandom(localSeed), FastRandom(localSeed)) - 1.0f;
             ray.Direction = glm::normalize(payload.HitNormal + unitSphere);
         }
-        return finalColor;
+        return glm::vec4(finalColor, 1.0f);
     }
 
     Renderer::Payload Renderer::TraceRay(const Ray& ray) const

@@ -17,10 +17,10 @@ namespace RT
 
         m_ShouldRun &= m_MainWindow.Init();
 
-		m_Scene.Materials.emplace_back(Render::Material{ { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f });
-		m_Scene.Materials.emplace_back(Render::Material{ { 1.0f, 0.2f, 1.0f }, 0.7f, 0.8f });
-		m_Scene.Materials.emplace_back(Render::Material{ { 0.2f, 0.5f, 0.7f }, 0.2f, 0.3f });
-		m_Scene.Materials.emplace_back(Render::Material{ { 0.8f, 0.6f, 0.5f }, 0.7f, 0.3f });
+		m_Scene.Materials.emplace_back(Render::Material{ { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f });
+		m_Scene.Materials.emplace_back(Render::Material{ { 1.0f, 0.2f, 1.0f }, { 1.0f, 0.2f, 1.0f }, 0.7f, 0.8f, 0.0f });
+		m_Scene.Materials.emplace_back(Render::Material{ { 0.2f, 0.5f, 0.7f }, { 0.2f, 0.5f, 0.7f }, 0.2f, 0.3f, 0.0f });
+		m_Scene.Materials.emplace_back(Render::Material{ { 0.8f, 0.6f, 0.5f }, { 0.8f, 0.6f, 0.5f }, 0.7f, 0.3f, 1.0f });
 		
 		m_Scene.Spheres.emplace_back(Render::Sphere{ { 0.0f, 0.0f, -2.0f }, 1.0f, 1 });
 		m_Scene.Spheres.emplace_back(Render::Sphere{ { 0.0f, -2001.0f, -2.0f }, 2000.0f, 2 });
@@ -69,8 +69,10 @@ namespace RT
 			Render::Material& material = m_Scene.Materials[i];
 
 			ImGui::ColorEdit3("Albedo", glm::value_ptr(material.Albedo));
+			ImGui::ColorEdit3("Emmision Color", glm::value_ptr(material.EmmisionColor));
 			ImGui::DragFloat("Roughness", &material.Roughness, 0.005f, 0.0f, 1.0f);
 			ImGui::DragFloat("Metalic", &material.Metalic, 0.005f, 0.0f, 1.0f);
+			ImGui::DragFloat("Emmision Power", &material.EmmisionPower, 0.005f, 0.0f, std::numeric_limits<float>::max());
 
 			ImGui::Separator();
 			ImGui::PopID();
