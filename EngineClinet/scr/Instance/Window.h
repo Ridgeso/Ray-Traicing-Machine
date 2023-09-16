@@ -27,7 +27,7 @@ namespace RT::Instance
 		bool IsMousePressed(int32_t key) const;
 		glm::ivec2 GetSize() const;
 
-		void LockCursor(bool state) const;
+		void CursorMode(int32_t state) const;
 
 		GLFWwindow* GetNativeWindow() { return m_Window; }
 

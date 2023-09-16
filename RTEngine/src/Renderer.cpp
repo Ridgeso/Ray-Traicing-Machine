@@ -14,7 +14,7 @@ namespace RT::Render
 {
 
     Renderer::Renderer()
-        : Accumulate(true), m_FrameIndex(0)
+        : DrawEnvironment(false), Accumulate(true), MaxBounces(5), MaxFrames(1), m_FrameIndex(0)
         , m_SpecSize(0), m_RenderSize(0)
     {
     }
@@ -104,6 +104,9 @@ namespace RT::Render
 
         u_AccumulationTexture = glGetUniformLocation(m_Program, "u_AccumulationTexture");
         u_ScreenTexture = glGetUniformLocation(m_Program, "u_ScreenTexture");
+        u_MaxBounces = glGetUniformLocation(m_Program, "u_MaxBounces");
+        u_DrawEnvironment = glGetUniformLocation(m_Program, "u_DrawEnvironment");
+        u_MaxFrames = glGetUniformLocation(m_Program, "u_MaxFrames");
         u_FrameIndex = glGetUniformLocation(m_Program, "u_FrameIndex");
         u_Resolution = glGetUniformLocation(m_Program, "u_Resolution");
         u_MaterialsCount = glGetUniformLocation(m_Program, "u_MaterialsCount");
@@ -152,6 +155,9 @@ namespace RT::Render
         glUseProgram(m_Program);
         glUniform1i(u_AccumulationTexture, 0);
         glUniform1i(u_ScreenTexture, 1);
+        glUniform1f(u_DrawEnvironment, (float)DrawEnvironment);
+        glUniform1ui(u_MaxBounces, MaxBounces);
+        glUniform1ui(u_MaxFrames, MaxFrames);
         glUniform1ui(u_FrameIndex, m_FrameIndex);
         glUniform2f(u_Resolution, (float)m_SpecSize.x, (float)m_SpecSize.y);
 

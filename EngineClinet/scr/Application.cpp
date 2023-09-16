@@ -10,27 +10,57 @@
 namespace RT
 {
 
+	uint32_t pcg_hash(uint32_t input)
+	{
+		uint32_t state = input * 747796405u + 2891336453u;
+		uint32_t word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+		return (word >> 22u) ^ word;
+	}
+
+	float FastRandom(uint32_t& seed)
+	{
+		seed = pcg_hash(seed);
+		return (float)seed / std::numeric_limits<uint32_t>::max();
+	}
+
 	Application* Application::s_MainApp = nullptr;
 
 	Application::Application()
 		: m_ShouldRun(true), m_LastFrameDuration(0.f), m_AppFrameDuration(0), m_ViewportSize(), m_Camera(45.0f, 0.01f, 100.0f)
 	{
 		s_MainApp = this;
+		uint32_t seed = 542362526223u;
 
         m_ShouldRun &= m_MainWindow.Init();
 		glm::ivec2 windowSize = m_MainWindow.GetSize();
 		m_ShouldRun &= m_Renderer.Invalidate(windowSize.x, windowSize.y);
 
-		m_Scene.Materials.emplace_back(Render::Material{ { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f });
-		m_Scene.Materials.emplace_back(Render::Material{ { 1.0f, 0.2f, 1.0f }, 0.7f, 0.8f });
-		m_Scene.Materials.emplace_back(Render::Material{ { 0.2f, 0.5f, 0.7f }, 0.2f, 0.3f });
-		m_Scene.Materials.emplace_back(Render::Material{ { 0.8f, 0.6f, 0.5f }, 0.7f, 0.3f });
+		m_Scene.Materials.emplace_back(Render::Material{ { 0.0f, 0.0f, 0.0f }, 0.0, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f });
+		m_Scene.Materials.emplace_back(Render::Material{ { 1.0f, 0.2f, 1.0f }, 0.0, { 1.0f, 0.2f, 1.0f }, 0.7f, 0.8f, 0.0f });
+		m_Scene.Materials.emplace_back(Render::Material{ { 0.2f, 0.5f, 0.7f }, 0.0, { 0.2f, 0.5f, 0.7f }, 0.05f, 0.3f, 0.0f });
+		m_Scene.Materials.emplace_back(Render::Material{ { 0.8f, 0.6f, 0.5f }, 0.0, { 0.8f, 0.6f, 0.5f }, 0.0f, 0.3f, 1.0f });
+		m_Scene.Materials.emplace_back(Render::Material{ { 0.4f, 0.3f, 0.8f }, 0.0, { 0.8f, 0.6f, 0.5f }, 0.0f, 0.3f, 0.0f });
 		
 		m_Scene.Spheres.emplace_back(Render::Sphere{ { 0.0f, 0.0f, -2.0f }, 1.0f, 1 });
 		m_Scene.Spheres.emplace_back(Render::Sphere{ { 0.0f, -2001.0f, -2.0f }, 2000.0f, 2 });
 		m_Scene.Spheres.emplace_back(Render::Sphere{ { 2.5f, 0.0f, -2.0f }, 1.0f, 3 });
+		m_Scene.Spheres.emplace_back(Render::Sphere{ { -2.5f, 0.0f, -2.0f }, 1.0f, 4 });
+
+		for (int i = 0; i < 30; i++)
+		{
+			m_Scene.Materials.emplace_back(Render::Material{ });
+			m_Scene.Materials[m_Scene.Materials.size() - 1].Albedo = { FastRandom(seed), FastRandom(seed), FastRandom(seed) };
+			m_Scene.Materials[m_Scene.Materials.size() - 1].EmmisionColor = { FastRandom(seed), FastRandom(seed), FastRandom(seed) };
+			m_Scene.Materials[m_Scene.Materials.size() - 1].Roughness = FastRandom(seed) > 0.9 ? 0.f : FastRandom(seed);
+			m_Scene.Materials[m_Scene.Materials.size() - 1].EmmisionPower = FastRandom(seed) > 0.9 ? FastRandom(seed) : 0.f;
+
+			m_Scene.Spheres.emplace_back(Render::Sphere{ });
+			m_Scene.Spheres[m_Scene.Spheres.size() - 1].Position = { FastRandom(seed) * 7.0f - 3.5f, -0.75, -2.0 + FastRandom(seed) * 7.0f - 3.5f };
+			m_Scene.Spheres[m_Scene.Spheres.size() - 1].Radius = 0.25;
+			m_Scene.Spheres[m_Scene.Spheres.size() - 1].MaterialId = m_Scene.Materials.size() - 1;
+		}
 	
-		m_LastMousePos = glm::vec2(0);
+		m_LastMousePos = windowSize / 2;
 	}
 
 	Application::~Application()
@@ -44,6 +74,7 @@ namespace RT
 		while (m_ShouldRun)
 		{
 			Timer appTimer;
+
 			Render();
 			m_MainWindow.BeginUI();
                 Layout();
@@ -51,6 +82,7 @@ namespace RT
 
 			m_ShouldRun &= m_MainWindow.Update();
 			m_ShouldRun &= m_MainWindow.PullEvents();
+
 			m_AppFrameDuration = appTimer.Ellapsed();
 		}
 	}
@@ -61,9 +93,16 @@ namespace RT
 		ImGui::Text("App frame took: %.3fms", m_AppFrameDuration);
 		ImGui::Text("Last render took: %.3fms", m_LastFrameDuration);
 		ImGui::Text("Frames: %d", m_Renderer.GetFrames());
+		ImGui::DragInt("Bounces Limit", (int32_t*)&m_Renderer.MaxBounces, 1, 1, 100);
+		ImGui::DragInt("Precalculated Frames Limit", (int32_t*)&m_Renderer.MaxFrames, 1, 1, 15);
 		if (ImGui::Button("Reset"))
 			m_Renderer.ResetFrame();
 		ImGui::Checkbox("Accumulate", &m_Renderer.Accumulate);
+		ImGui::Checkbox("Draw Environment", &m_Renderer.DrawEnvironment);
+		if (ImGui::Button("Add Material"))
+			m_Scene.Materials.emplace_back(Render::Material{ { 0.0f, 0.0f, 0.0f }, 0.0, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f });
+		if (ImGui::Button("Add Sphere"))
+			m_Scene.Spheres.emplace_back(Render::Sphere{ { 0.0f, 0.0f, -2.0f }, 1.0f, 0 });
 		ImGui::End();
 
 		ImGui::Begin("Scene");
@@ -75,8 +114,10 @@ namespace RT
 			Render::Material& material = m_Scene.Materials[i];
 
 			ImGui::ColorEdit3("Albedo", glm::value_ptr(material.Albedo));
+			ImGui::ColorEdit3("Emmision Color", glm::value_ptr(material.EmmisionColor));
 			ImGui::DragFloat("Roughness", &material.Roughness, 0.005f, 0.0f, 1.0f);
 			ImGui::DragFloat("Metalic", &material.Metalic, 0.005f, 0.0f, 1.0f);
+			ImGui::DragFloat("Emmision Power", &material.EmmisionPower, 0.005f, 0.0f, std::numeric_limits<float>::max());
 
 			ImGui::Separator();
 			ImGui::PopID();
@@ -119,6 +160,9 @@ namespace RT
 
 		ImGui::End();
 		ImGui::PopStyleVar();
+
+		//static bool demo = true;
+		//ImGui::ShowDemoWindow(&demo);
 	}
 
 	void Application::Render()
@@ -140,6 +184,7 @@ namespace RT
 		const float rotationSpeed = 0.3f;
 		const glm::vec3 up = glm::vec3(0, 1, 0);
 		const glm::vec3& forward = m_Camera.GetDirection();
+
 		glm::vec3 right = glm::cross(forward, up);
 		bool moved = false;
 
@@ -188,7 +233,7 @@ namespace RT
 
 		if (m_MainWindow.IsMousePressed(GLFW_MOUSE_BUTTON_RIGHT))
 		{
-			m_MainWindow.LockCursor(true);
+			m_MainWindow.CursorMode(GLFW_CURSOR_DISABLED);
 			if (mouseDelta != glm::vec2(0.0f))
 			{
 				mouseDelta *= rotationSpeed;
@@ -201,7 +246,9 @@ namespace RT
 			}
 		}
 		else
-			m_MainWindow.LockCursor(false);
+		{
+			m_MainWindow.CursorMode(GLFW_CURSOR_NORMAL);
+		}
 
 		if (moved)
 		{

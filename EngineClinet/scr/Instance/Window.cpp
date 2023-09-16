@@ -104,9 +104,9 @@ namespace RT::Instance
 
     glm::vec2 Window::GetMousePos() const
     {
-        glm::dvec2 mousePos;
-        glfwGetCursorPos(m_Window, &mousePos.x, &mousePos.y);
-        return mousePos;
+        double x, y;
+        glfwGetCursorPos(m_Window, &x, &y);
+        return { (float)x, (float)y };
     }
 
     bool Window::IsKeyPressed(int32_t key) const
@@ -126,12 +126,9 @@ namespace RT::Instance
         return { width, height };
     }
 
-    void Window::LockCursor(bool state) const
+    void Window::CursorMode(int32_t state) const
     {
-        if (state)
-            glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        else
-            glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetInputMode(m_Window, GLFW_CURSOR, state);
     }
 
     void Window::WindowResize()

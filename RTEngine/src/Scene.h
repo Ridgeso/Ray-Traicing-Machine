@@ -9,9 +9,12 @@ namespace RT::Render
 	struct Material
 	{
 		glm::vec3 Albedo;
+		float Padding1[1];
+		glm::vec3 EmmisionColor;
 		float Roughness;
 		float Metalic;
-		float padding[3];
+		float EmmisionPower;
+		float Padding2[2];
 	};
 
 	#pragma pack(1)

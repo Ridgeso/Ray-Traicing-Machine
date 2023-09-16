@@ -29,7 +29,8 @@ namespace RT::Render
 		int32_t GetDescriptor() const { return m_RenderId; }
 
 	public:
-		bool Accumulate;
+		bool Accumulate, DrawEnvironment;
+		uint32_t MaxBounces, MaxFrames;
 
 	private:
 		void CompileShader(uint32_t shaderID, const std::string& source) const;
@@ -43,7 +44,7 @@ namespace RT::Render
 		uint32_t m_ScreenBuffer = 0, m_FrameBufferId = 0, m_RenderBuffer = 0, m_Program = 0;
 
 		int32_t u_AccumulationTexture = 0, u_ScreenTexture = 0;
-		int32_t u_FrameIndex = 0, u_Resolution = 0, u_MaterialsCount = 0, u_SpheresCount = 0;
+		int32_t u_DrawEnvironment = 0, u_MaxBounces = 0, u_MaxFrames = 0, u_FrameIndex = 0, u_Resolution = 0, u_MaterialsCount = 0, u_SpheresCount = 0;
 		uint32_t u_CameraStorage = 0, u_MaterialsStorage = 1, u_SpheresStorage= 2;
 
 		struct Vertices
