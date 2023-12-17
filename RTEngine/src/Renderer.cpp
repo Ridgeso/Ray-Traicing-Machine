@@ -167,7 +167,8 @@ namespace RT::Render
         
         glUniform1i(u_MaterialsCount, scene.Materials.size());
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, u_MaterialsStorage);
-        glBufferData(GL_SHADER_STORAGE_BUFFER,
+        glBufferData(
+            GL_SHADER_STORAGE_BUFFER,
             sizeof(Material) * scene.Materials.size(),
             scene.Materials.data(),
             GL_DYNAMIC_DRAW

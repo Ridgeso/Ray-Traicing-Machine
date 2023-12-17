@@ -14,7 +14,8 @@ namespace RT::Render
 		float Roughness;
 		float Metalic;
 		float EmmisionPower;
-		float Padding2[2];
+		float RefractionRatio;
+		float Padding2[1];
 	};
 
 	#pragma pack(1)
