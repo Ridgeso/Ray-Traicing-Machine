@@ -20,20 +20,20 @@ namespace RT
 		void Render();
 		void UpdateView(float ts);
 
-		static Application& Get() { return *s_MainApp; }
+		static Application& Get() { return *MainApp; }
 
 	private:
-		bool m_ShouldRun;
-		float m_LastFrameDuration;
-		float m_AppFrameDuration;
-		ImVec2 m_ViewportSize;
-		Instance::Window m_MainWindow;
-		Render::Renderer m_Renderer;
-		Render::Camera m_Camera;
-		Render::Scene m_Scene;
+		bool shouldRun;
+		float lastFrameDuration;
+		float appFrameDuration;
+		ImVec2 viewportSize;
+		Instance::Window mainWindow;
+		Render::Renderer renderer;
+		Render::Camera camera;
+		Render::Scene scene;
 
-		glm::vec2 m_LastMousePos;
-		static Application* s_MainApp;
+		glm::vec2 lastMousePos;
+		static Application* MainApp;
 	};
 
 	Application* CreateApp();

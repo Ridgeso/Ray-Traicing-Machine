@@ -13,16 +13,16 @@ namespace RT::Instance
         if (!glfwInit())
             return false;
 
-        m_Width = 1280;
-        m_Height = 720;
-        m_Window = glfwCreateWindow(m_Width, m_Height, "Ray Tracing", NULL, NULL);
-        if (!m_Window)
+        width = 1280;
+        height = 720;
+        window = glfwCreateWindow(width, height, "Ray Tracing", NULL, NULL);
+        if (!window)
         {
             glfwTerminate();
             return false;
         }
 
-        glfwMakeContextCurrent(m_Window);
+        glfwMakeContextCurrent(window);
         glfwSwapInterval(0);
 
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -46,7 +46,7 @@ namespace RT::Instance
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
 
-        ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 430 core");
 
         io.Fonts->Build();
@@ -60,16 +60,16 @@ namespace RT::Instance
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
 
-        glfwDestroyWindow(m_Window);
+        glfwDestroyWindow(window);
         glfwTerminate();
 	}
 
 	bool Window::Update()
 	{
         glfwPollEvents();
-        glfwSwapBuffers(m_Window);
+        glfwSwapBuffers(window);
 
-		return !glfwWindowShouldClose(m_Window);
+		return !glfwWindowShouldClose(window);
 	}
 
     bool Window::PullEvents()
@@ -105,40 +105,40 @@ namespace RT::Instance
     glm::vec2 Window::GetMousePos() const
     {
         double x, y;
-        glfwGetCursorPos(m_Window, &x, &y);
+        glfwGetCursorPos(window, &x, &y);
         return { (float)x, (float)y };
     }
 
     bool Window::IsKeyPressed(int32_t key) const
     {
-        return glfwGetKey(m_Window, key) == GLFW_PRESS;
+        return glfwGetKey(window, key) == GLFW_PRESS;
     }
 
     bool Window::IsMousePressed(int32_t key) const
     {
-        return glfwGetMouseButton(m_Window, key) == GLFW_PRESS;
+        return glfwGetMouseButton(window, key) == GLFW_PRESS;
     }
 
     glm::ivec2 Window::GetSize() const
     {
         int32_t width, height;
-        glfwGetWindowSize(m_Window, &width, &height);
+        glfwGetWindowSize(window, &width, &height);
         return { width, height };
     }
 
     void Window::CursorMode(int32_t state) const
     {
-        glfwSetInputMode(m_Window, GLFW_CURSOR, state);
+        glfwSetInputMode(window, GLFW_CURSOR, state);
     }
 
     void Window::WindowResize()
     {
         glm::ivec2 winSize = GetSize();
-        if (winSize.x != m_Width || winSize.y != m_Height)
+        if (winSize.x != width || winSize.y != height)
         {
-            m_Width = winSize.x;
-            m_Height = winSize.y;
-            glViewport(0, 0, m_Width, m_Height);
+            width = winSize.x;
+            height = winSize.y;
+            glViewport(0, 0, width, height);
         }
     }
 

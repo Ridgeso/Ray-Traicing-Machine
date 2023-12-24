@@ -14,17 +14,16 @@ namespace RT::Render
 {
 
     Renderer::Renderer()
-        : DrawEnvironment(false), Accumulate(true), MaxBounces(5), MaxFrames(1), m_FrameIndex(0)
-        , m_SpecSize(0), m_RenderSize(0)
+        : accumulation(false)
     {
     }
 
     bool Renderer::Invalidate(int32_t width, int32_t height)
     {
-        m_SpecSize = { width, height };
+        resolutionUni.value = { width, height };
 
-        glCreateBuffers(1, &m_ScreenBuffer);
-        glBindBuffer(GL_ARRAY_BUFFER, m_ScreenBuffer);
+        glCreateBuffers(1, &screenBufferId);
+        glBindBuffer(GL_ARRAY_BUFFER, screenBufferId);
         glBufferData(GL_ARRAY_BUFFER, sizeof(s_Screen), s_Screen, GL_STATIC_DRAW);
         
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertices), (void*)offsetof(Vertices, Coords));
@@ -33,8 +32,8 @@ namespace RT::Render
         glEnableVertexAttribArray(1);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        glCreateFramebuffers(1, &m_FrameBufferId);
-        glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBufferId);
+        glCreateFramebuffers(1, &frameBufferId);
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
 
         #define AttachColorTexture(TexId, Format, Width, Height) \
             glGenTextures(1, &TexId); \
@@ -46,18 +45,18 @@ namespace RT::Render
             glTexImage2D(GL_TEXTURE_2D, 0, Format, Width, Height, 0, GL_RGBA, GL_FLOAT, nullptr); \
             glBindTexture(GL_TEXTURE_2D, 0)
 
-        AttachColorTexture(m_AccumulationId, GL_RGBA32F, m_SpecSize.x, m_SpecSize.y);
-        AttachColorTexture(m_RenderId, GL_RGBA32F, m_SpecSize.x, m_SpecSize.y);
+        AttachColorTexture(accumulationId, GL_RGBA32F, resolutionUni.value.x, resolutionUni.value.y);
+        AttachColorTexture(renderId, GL_RGBA32F, resolutionUni.value.x, resolutionUni.value.y);
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_AccumulationId, 0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_RenderId, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, accumulationId, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, renderId, 0);
 
-        glGenRenderbuffers(1, &m_RenderBuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, m_RenderBuffer);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_SpecSize.x, m_SpecSize.y);
+        glGenRenderbuffers(1, &renderBufferId);
+        glBindRenderbuffer(GL_RENDERBUFFER, renderBufferId);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, resolutionUni.value.x, resolutionUni.value.y);
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
         
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RenderBuffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBufferId);
 
         constexpr uint32_t buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
         glDrawBuffers(2, buffers);
@@ -93,49 +92,49 @@ namespace RT::Render
 
         CompileShader(vertexShaderId, shadersSource[Vertex].str());
         CompileShader(fragmentShaderId, shadersSource[Fragment].str());
-        m_Program = glCreateProgram();
-        glAttachShader(m_Program, vertexShaderId);
-        glAttachShader(m_Program, fragmentShaderId);
-        glLinkProgram(m_Program);
-        glValidateProgram(m_Program);
+        programId = glCreateProgram();
+        glAttachShader(programId, vertexShaderId);
+        glAttachShader(programId, fragmentShaderId);
+        glLinkProgram(programId);
+        glValidateProgram(programId);
 
         glDeleteShader(vertexShaderId);
         glDeleteShader(fragmentShaderId);
 
-        u_AccumulationTexture = glGetUniformLocation(m_Program, "u_AccumulationTexture");
-        u_ScreenTexture = glGetUniformLocation(m_Program, "u_ScreenTexture");
-        u_MaxBounces = glGetUniformLocation(m_Program, "u_MaxBounces");
-        u_DrawEnvironment = glGetUniformLocation(m_Program, "u_DrawEnvironment");
-        u_MaxFrames = glGetUniformLocation(m_Program, "u_MaxFrames");
-        u_FrameIndex = glGetUniformLocation(m_Program, "u_FrameIndex");
-        u_Resolution = glGetUniformLocation(m_Program, "u_Resolution");
-        u_MaterialsCount = glGetUniformLocation(m_Program, "u_MaterialsCount");
-        u_SpheresCount = glGetUniformLocation(m_Program, "u_SpheresCount");
+        accumulationSamplerUni.ID = glGetUniformLocation(programId, accumulationSamplerUni.name.c_str());
+        renderSamplerUni.ID = glGetUniformLocation(programId, renderSamplerUni.name.c_str());
+        drawEnvironmentUni.ID = glGetUniformLocation(programId, drawEnvironmentUni.name.c_str());
+        maxBouncesUni.ID = glGetUniformLocation(programId, maxBouncesUni.name.c_str());
+        maxFramesUni.ID = glGetUniformLocation(programId, maxFramesUni.name.c_str());
+        frameIndexUni.ID = glGetUniformLocation(programId, frameIndexUni.name.c_str());
+        resolutionUni.ID = glGetUniformLocation(programId, resolutionUni.name.c_str());
+        materialsCountUni.ID = glGetUniformLocation(programId, materialsCountUni.name.c_str());
+        spheresCountUni.ID = glGetUniformLocation(programId, spheresCountUni.name.c_str());
 
-        glGenBuffers(1, &u_CameraStorage);
-        glGenBuffers(1, &u_MaterialsStorage);
-        glGenBuffers(1, &u_SpheresStorage);
+        glGenBuffers(1, &cameraStorage);
+        glGenBuffers(1, &materialsStorage);
+        glGenBuffers(1, &spheresStorage);
 
         return true;
     }
 
     void Renderer::Devalidate()
     {
-        glDeleteBuffers(1, &u_CameraStorage);
-        glDeleteBuffers(1, &u_MaterialsStorage);
-        glDeleteBuffers(1, &u_SpheresStorage);
+        glDeleteBuffers(1, &cameraStorage);
+        glDeleteBuffers(1, &materialsStorage);
+        glDeleteBuffers(1, &spheresStorage);
 
-        glDeleteTextures(1, &m_AccumulationId);
-        glDeleteTextures(1, &m_RenderId);
-        glDeleteProgram(m_Program);
-        glDeleteBuffers(1, &m_ScreenBuffer);
-        glDeleteRenderbuffers(1, &m_RenderBuffer);
-        glDeleteFramebuffers(1, &m_FrameBufferId);
+        glDeleteTextures(1, &accumulationId);
+        glDeleteTextures(1, &renderId);
+        glDeleteProgram(programId);
+        glDeleteBuffers(1, &screenBufferId);
+        glDeleteRenderbuffers(1, &renderBufferId);
+        glDeleteFramebuffers(1, &frameBufferId);
     }
 
     bool Renderer::RecreateRenderer(int32_t width, int32_t height)
     {
-        if (m_SpecSize != glm::ivec2(width, height))
+        if (resolutionUni.value != glm::ivec2(width, height))
         {
             ResetFrame();
             Devalidate();
@@ -146,51 +145,54 @@ namespace RT::Render
 
     void Renderer::Render(const Camera& camera, const Scene& scene)
     {
-        m_FrameIndex++;
-        if (!Accumulate)
-            m_FrameIndex = 1;
+        frameIndexUni.value++;
+        if (!accumulation)
+        {
+            frameIndexUni.value = 1;
+        }
 
-        glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBufferId);
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
 
-        glUseProgram(m_Program);
-        glUniform1i(u_AccumulationTexture, 0);
-        glUniform1i(u_ScreenTexture, 1);
-        glUniform1f(u_DrawEnvironment, (float)DrawEnvironment);
-        glUniform1ui(u_MaxBounces, MaxBounces);
-        glUniform1ui(u_MaxFrames, MaxFrames);
-        glUniform1ui(u_FrameIndex, m_FrameIndex);
-        glUniform2f(u_Resolution, (float)m_SpecSize.x, (float)m_SpecSize.y);
+        glUseProgram(programId);
 
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, u_CameraStorage);
+        glUniform1i(accumulationSamplerUni.ID, accumulationSamplerUni.value);
+        glUniform1i(renderSamplerUni.ID, renderSamplerUni.value);
+        glUniform1f(drawEnvironmentUni.ID, (float)drawEnvironmentUni.value);
+        glUniform1ui(maxBouncesUni.ID, maxBouncesUni.value);
+        glUniform1ui(maxFramesUni.ID, maxFramesUni.value);
+        glUniform1ui(frameIndexUni.ID, frameIndexUni.value);
+        glUniform2f(resolutionUni.ID, (float)resolutionUni.value.x, (float)resolutionUni.value.y);
+
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, cameraStorage);
         glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Camera::Spec), &camera.GetSpec(), GL_DYNAMIC_DRAW);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, u_CameraStorage);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, cameraStorage);
         
-        glUniform1i(u_MaterialsCount, scene.Materials.size());
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, u_MaterialsStorage);
+        glUniform1i(materialsCountUni.ID, scene.materials.size());
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialsStorage);
         glBufferData(
             GL_SHADER_STORAGE_BUFFER,
-            sizeof(Material) * scene.Materials.size(),
-            scene.Materials.data(),
+            sizeof(Material) * scene.materials.size(),
+            scene.materials.data(),
             GL_DYNAMIC_DRAW
         );
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, u_MaterialsStorage);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialsStorage);
         
-        glUniform1i(u_SpheresCount, scene.Spheres.size());
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, u_SpheresStorage);
+        glUniform1i(spheresCountUni.ID, scene.spheres.size());
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, spheresStorage);
         glBufferData(GL_SHADER_STORAGE_BUFFER,
-            sizeof(Sphere) * scene.Spheres.size(),
-            scene.Spheres.data(),
+            sizeof(Sphere) * scene.spheres.size(),
+            scene.spheres.data(),
             GL_DYNAMIC_DRAW
         );
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, u_SpheresStorage);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, spheresStorage);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-        glBindBuffer(GL_ARRAY_BUFFER, m_ScreenBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, screenBufferId);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_AccumulationId);
+        glBindTexture(GL_TEXTURE_2D, accumulationId);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, m_RenderId);
+        glBindTexture(GL_TEXTURE_2D, renderId);
         
         glDrawArrays(GL_TRIANGLES, 0, sizeof(s_Screen) / sizeof(float));
         

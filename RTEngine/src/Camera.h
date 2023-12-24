@@ -12,27 +12,27 @@ namespace RT::Render
 		#pragma pack(1)
 		struct Spec
 		{
-			glm::mat4 InvProjection;
-			glm::mat4 InvView;
-			glm::vec3 Position;
+			glm::mat4 invProjection;
+			glm::mat4 invView;
+			glm::vec3 position;
 			float padding[1];
 		};
 
 	public:
 		Camera(float fov, float near, float far);
 
-		const glm::vec3& GetPosition() const { return m_Spec.Position; }
-		glm::vec3& GetPosition() { return m_Spec.Position; }
-		void SetPosition(const glm::vec3& newPos) { m_Spec.Position = newPos; }
+		const glm::vec3& GetPosition() const { return spec.position; }
+		glm::vec3& GetPosition() { return spec.position; }
+		void SetPosition(const glm::vec3& newPos) { spec.position = newPos; }
 
-		const glm::vec3& GetDirection() const { return m_Direction; }
-		glm::vec3& GetDirection() { return m_Direction; }
-		void SetDirection(const glm::vec3& newDir) { m_Direction = newDir; }
+		const glm::vec3& GetDirection() const { return direction; }
+		glm::vec3& GetDirection() { return direction; }
+		void SetDirection(const glm::vec3& newDir) { direction = newDir; }
 
-		const glm::mat4& GetInvProjection() const { return m_Spec.InvProjection; }
-		const glm::mat4& GetInvView() const { return m_Spec.InvView; }
+		const glm::mat4& GetInvProjection() const { return spec.invProjection; }
+		const glm::mat4& GetInvView() const { return spec.invView; }
 
-		const Spec& GetSpec() const { return m_Spec; }
+		const Spec& GetSpec() const { return spec; }
 
 		void RecalculateInvProjection();
 		void RecalculateInvView();
@@ -40,13 +40,13 @@ namespace RT::Render
 		void ResizeCamera(int32_t width, int32_t height);
 
 	private:
-		Spec m_Spec;
-		glm::vec3 m_Direction;
+		Spec spec;
+		glm::vec3 direction;
 
-		float m_Fov, m_Near, m_Far;
-		glm::ivec2 m_ViewSize;
+		float fov, near, far;
+		glm::ivec2 viewSize;
 
-		static const glm::vec3 c_Up;
+		static const glm::vec3 Up;
 	};
 
 }

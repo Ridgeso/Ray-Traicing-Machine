@@ -13,7 +13,6 @@ void main()
 
 ###SHADER(FRAGMENT)
 #version 430 core
-#define lerp mix
 #define LOWETS_THRESHOLD 1.0e-6F
 #define FLT_MAX 3.402823466e+38F
 #define UINT_MAX 4294967295.0
@@ -24,14 +23,14 @@ in vec2 TexCoords;
 layout (location = 0) out vec4 AccumulationColor;
 layout (location = 1) out vec4 ScreenColor;
 
-uniform sampler2D u_AccumulationTexture;
-uniform sampler2D u_ScreenTexture;
+uniform sampler2D AccumulationTexture;
+uniform sampler2D RenderTexture;
 
-uniform float u_DrawEnvironment;
-uniform uint u_MaxBounces;
-uniform uint u_MaxFrames;
-uniform uint u_FrameIndex;
-uniform vec2 u_Resolution;
+uniform float DrawEnvironment;
+uniform uint MaxBounces;
+uniform uint MaxFrames;
+uniform uint FrameIndex;
+uniform vec2 Resolution;
 
 layout(std430, binding = 0) buffer Camera
 {
@@ -50,7 +49,7 @@ struct Material
     float RefractionRatio;
 };
 
-uniform int u_MaterialsCount;
+uniform int MaterialsCount;
 layout(std430, binding = 1) buffer MaterialsBuffer
 {
     Material b_Materials[];
@@ -73,7 +72,7 @@ struct Sphere
     int MaterialId;
 };
 
-uniform int u_SpheresCount;
+uniform int SpheresCount;
 layout(std430, binding = 2) buffer SpheresBuffer
 {
     Sphere b_Spheres[];
@@ -128,9 +127,9 @@ Payload Miss(in Ray ray)
     //vec3 skyColor = vec3((1.0 - ray.Direction.yy) / 4.0 + 0.6, 1.0);
     float skyLerp = pow(smoothstep(0.0, 0.4, ray.Direction.y), 0.35);
     float groundToSky = smoothstep(-0.01, 0.0, ray.Direction.y);
-    vec3 skyGradient = lerp(SkyColorHorizon, SkyColorZenith, skyLerp);
+    vec3 skyGradient = mix(SkyColorHorizon, SkyColorZenith, skyLerp);
     float sun = pow(max(0.0, dot(ray.Direction, -LightDir)), 500.0) * 100.0;
-    vec3 skyColor = lerp(GroundColor, skyGradient, groundToSky) + sun * float(groundToSky >= 1.0);
+    vec3 skyColor = mix(GroundColor, skyGradient, groundToSky) + sun * float(groundToSky >= 1.0);
     
     Payload payload;
     payload.Color = skyColor;
@@ -159,7 +158,7 @@ Payload TraceRay(in Ray ray)
     float closestDistance = FLT_MAX;
     int closestObject = -1;
     
-    for (int sphereId = 0; sphereId < u_SpheresCount; sphereId++)
+    for (int sphereId = 0; sphereId < SpheresCount; sphereId++)
     {
         vec3 origin = ray.Origin - b_Spheres[sphereId].Position;
         
@@ -235,7 +234,7 @@ void ReflectRay(inout Ray ray, in Payload payload)
     
     vec3 diffuseDir = normalize(payload.HitNormal + RandomUnitSpehere(Global.seed));
     vec3 specularDir = reflect(ray.Direction, payload.HitNormal);
-    ray.Direction = lerp(diffuseDir, specularDir, b_Materials[b_Spheres[payload.HitObject].MaterialId].Roughness);
+    ray.Direction = mix(diffuseDir, specularDir, b_Materials[b_Spheres[payload.HitObject].MaterialId].Roughness);
 }
 
 void Scatter(inout Ray ray, in Payload payload)
@@ -252,7 +251,7 @@ void Scatter(inout Ray ray, in Payload payload)
 
 void main()
 {
-    vec2 pixelCoord = gl_FragCoord.xy / u_Resolution;
+    vec2 pixelCoord = gl_FragCoord.xy / Resolution;
     vec4 coord = b_Camera.Projection * (2.0 * vec4(pixelCoord, 1.0, 1.0) - 1.0);
     
     Ray precalculatedRay;
@@ -263,14 +262,14 @@ void main()
     pixel.Color = vec3(0);
     pixel.Contribution = vec3(1);
     
-    for (uint frame = 1; frame <= u_MaxFrames; frame++)
+    for (uint frame = 1; frame <= MaxFrames; frame++)
     {
-        Global.seed = uint(gl_FragCoord.y * u_Resolution.x + gl_FragCoord.x) + frame * u_FrameIndex * 735529;
+        Global.seed = uint(gl_FragCoord.y * Resolution.x + gl_FragCoord.x) + frame * FrameIndex * 735529;
         
         Ray ray = precalculatedRay;
         pixel.Contribution = vec3(1);
     
-        for (uint i = 0u; i < u_MaxBounces; i++)
+        for (uint i = 0u; i < MaxBounces; i++)
         {
             Global.seed += i;
         
@@ -278,7 +277,7 @@ void main()
         
             if (payload.HitObject == -1)
             {
-                pixel.Color += payload.Color * pixel.Contribution * u_DrawEnvironment;
+                pixel.Color += payload.Color * pixel.Contribution * DrawEnvironment;
                 break;
             }
             
@@ -288,11 +287,11 @@ void main()
         }
     }
     
-    pixel.Color = pixel.Color / float(u_MaxFrames);
+    pixel.Color = pixel.Color / float(MaxFrames);
     
-    if (u_FrameIndex != 1)
-        pixel.Color += texture(u_AccumulationTexture, TexCoords).xyz;
+    if (FrameIndex != 1)
+        pixel.Color += texture(AccumulationTexture, TexCoords).xyz;
         
     AccumulationColor = vec4(pixel.Color, 1.0);
-    ScreenColor = vec4(AccumulationColor.xyz / float(u_FrameIndex), 1.0);
+    ScreenColor = vec4(AccumulationColor.xyz / float(FrameIndex), 1.0);
 }

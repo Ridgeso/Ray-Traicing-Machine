@@ -29,14 +29,14 @@ namespace RT::Instance
 
 		void CursorMode(int32_t state) const;
 
-		GLFWwindow* GetNativeWindow() { return m_Window; }
+		GLFWwindow* GetNativeWindow() { return window; }
 
 	private:
 		void WindowResize();
 
 	private:
-		int32_t m_Width = 0, m_Height = 0;
-		GLFWwindow* m_Window = nullptr;
+		int32_t width = 0, height = 0;
+		GLFWwindow* window = nullptr;
 	};
 
 }

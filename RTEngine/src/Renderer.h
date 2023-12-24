@@ -21,31 +21,52 @@ namespace RT::Render
 		bool RecreateRenderer(int32_t width, int32_t height);
 		void Render(const Camera& camera, const Scene& scene);
 
-		void ResetFrame() { m_FrameIndex = 0; }
-		uint32_t GetFrames() const { return m_FrameIndex; }
+		void ResetFrame() { frameIndexUni.value = 0; }
+		uint32_t GetFrames() const { return frameIndexUni.value; }
 
-		int32_t GetWidth() const { return m_RenderSize.x; }
-		int32_t GetHeight() const { return m_RenderSize.y; }
-		int32_t GetDescriptor() const { return m_RenderId; }
+		int32_t GetDescriptor() const { return renderId; }
 
-	public:
-		bool Accumulate, DrawEnvironment;
-		uint32_t MaxBounces, MaxFrames;
+		bool& Accumulation() { return accumulation; }
+		bool& DrawEnvironment() { return drawEnvironmentUni.value; }
+		uint32_t& MaxBounces() { return maxBouncesUni.value; }
+		uint32_t& MaxFrames() { return maxFramesUni.value; }
+
+	private:
+		template <typename Data = void>
+		struct UniformBase
+		{
+			uint32_t ID;
+			const std::string name;
+		};
+
+		template <typename Data = void>
+		struct Uniform : UniformBase<Data>
+		{
+			Data value;
+		};
+
+		template <>
+		struct Uniform<void> : UniformBase<> { };
 
 	private:
 		void CompileShader(uint32_t shaderID, const std::string& source) const;
 
 	private:
-		uint32_t m_FrameIndex;
+		bool accumulation;
 
-		glm::ivec2 m_SpecSize;
-		glm::ivec2 m_RenderSize;
-		uint32_t m_AccumulationId = 0, m_RenderId = 0;
-		uint32_t m_ScreenBuffer = 0, m_FrameBufferId = 0, m_RenderBuffer = 0, m_Program = 0;
+		Uniform<const int32_t> accumulationSamplerUni = { 0, "AccumulationTexture", 0 };
+		Uniform<const int32_t> renderSamplerUni = { 0, "RenderTexture", 1 };
+		Uniform<bool> drawEnvironmentUni = { 0, "DrawEnvironment", false };
+		Uniform<uint32_t> maxBouncesUni = { 0, "MaxBounces", 5 };
+		Uniform<uint32_t> maxFramesUni = { 0, "MaxFrames", 1 };
+		Uniform<int32_t> frameIndexUni = { 0, "FrameIndex", 0 };
+		Uniform<glm::ivec2> resolutionUni = { 0, "Resolution", glm::ivec2(0) };
+		Uniform<> materialsCountUni = { 0, "MaterialsCount" };
+		Uniform<> spheresCountUni = { 0, "SpheresCount" };
 
-		int32_t u_AccumulationTexture = 0, u_ScreenTexture = 0;
-		int32_t u_DrawEnvironment = 0, u_MaxBounces = 0, u_MaxFrames = 0, u_FrameIndex = 0, u_Resolution = 0, u_MaterialsCount = 0, u_SpheresCount = 0;
-		uint32_t u_CameraStorage = 0, u_MaterialsStorage = 1, u_SpheresStorage= 2;
+		uint32_t accumulationId = 0, renderId = 0;
+		uint32_t screenBufferId = 0, frameBufferId = 0, renderBufferId = 0, programId = 0;
+		uint32_t cameraStorage = 0, materialsStorage = 0, spheresStorage= 0;
 
 		struct Vertices
 		{
