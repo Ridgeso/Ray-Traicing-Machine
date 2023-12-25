@@ -25,8 +25,8 @@ namespace RT
 
 	Application* Application::MainApp = nullptr;
 
-	Application::Application()
-		: shouldRun(true), lastFrameDuration(0.f), appFrameDuration(0), viewportSize(), camera(45.0f, 0.01f, 100.0f)
+	Application::Application(ApplicationSpecs specs)
+		: specs(specs), shouldRun(true), lastFrameDuration(0.f), appFrameDuration(0), viewportSize(), camera(45.0f, 0.01f, 100.0f)
 	{
 		MainApp = this;
 		uint32_t seed = 9423262352u;
@@ -259,11 +259,6 @@ namespace RT
 			camera.RecalculateInvView();
 			renderer.ResetFrame();
 		}
-	}
-
-	Application* CreateApp()
-	{
-		return new Application();
 	}
 
 }

@@ -9,11 +9,22 @@
 namespace RT
 {
 
+	struct ApplicationCommandLineArgs
+	{
+		int32_t argc;
+		char** argv;
+	};
+
+	struct ApplicationSpecs
+	{
+		std::string name;
+	};
+
 	class Application
 	{
 	public:
-		Application();
-		~Application();
+		Application(ApplicationSpecs specs);
+		virtual ~Application();
 
 		void Run();
 		void Layout();
@@ -23,6 +34,7 @@ namespace RT
 		static Application& Get() { return *MainApp; }
 
 	private:
+		ApplicationSpecs specs;
 		bool shouldRun;
 		float lastFrameDuration;
 		float appFrameDuration;
@@ -36,6 +48,6 @@ namespace RT
 		static Application* MainApp;
 	};
 
-	Application* CreateApp();
+	Application* CreateApplication(ApplicationCommandLineArgs args);
 
 }

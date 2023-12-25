@@ -10,7 +10,7 @@ namespace RT
 	public:
 
 		Timer()
-			: timePoint{ high_resolution_clock::now() }
+			: timePoint(high_resolution_clock::now())
 		{
 		}
 

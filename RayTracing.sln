@@ -3,15 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33712.159
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EngineClinet", "EngineClinet\EngineClinet.vcxproj", "{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImGui", "Dependencies\ImGui\ImGui.vcxproj", "{4988C892-AF06-4B15-BF14-EEAC31E96FDB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Additional", "Additional", "{7FA90F31-8CFF-47F7-8EF0-853DBA6933EA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{7FA90F31-8CFF-47F7-8EF0-853DBA6933EA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RTEngine", "RTEngine\RTEngine.vcxproj", "{A23DAF3C-6FE8-4537-8A76-D79DF32D5E93}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Window", "Window\Window.vcxproj", "{D71A71F7-DCEB-4066-87B9-6766FE0648CC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RayTracing", "RayTracing\RayTracing.vcxproj", "{BCD587BF-B2B9-4477-9276-96916BE248EC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Engine.vcxproj", "{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Clients", "Clients", "{7D3C9D68-8523-4357-B9D7-D75BC567958D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{5F4B2579-6AEB-4A3D-9794-A06293E66D39}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,14 +27,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Debug|x64.ActiveCfg = Debug|x64
-		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Debug|x64.Build.0 = Debug|x64
-		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Debug|x86.ActiveCfg = Debug|Win32
-		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Debug|x86.Build.0 = Debug|Win32
-		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Release|x64.ActiveCfg = Release|x64
-		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Release|x64.Build.0 = Release|x64
-		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Release|x86.ActiveCfg = Release|Win32
-		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Release|x86.Build.0 = Release|Win32
 		{4988C892-AF06-4B15-BF14-EEAC31E96FDB}.Debug|x64.ActiveCfg = Debug|x64
 		{4988C892-AF06-4B15-BF14-EEAC31E96FDB}.Debug|x64.Build.0 = Debug|x64
 		{4988C892-AF06-4B15-BF14-EEAC31E96FDB}.Debug|x86.ActiveCfg = Debug|Win32
@@ -53,12 +51,32 @@ Global
 		{D71A71F7-DCEB-4066-87B9-6766FE0648CC}.Release|x64.Build.0 = Release|x64
 		{D71A71F7-DCEB-4066-87B9-6766FE0648CC}.Release|x86.ActiveCfg = Release|Win32
 		{D71A71F7-DCEB-4066-87B9-6766FE0648CC}.Release|x86.Build.0 = Release|Win32
+		{BCD587BF-B2B9-4477-9276-96916BE248EC}.Debug|x64.ActiveCfg = Debug|x64
+		{BCD587BF-B2B9-4477-9276-96916BE248EC}.Debug|x64.Build.0 = Debug|x64
+		{BCD587BF-B2B9-4477-9276-96916BE248EC}.Debug|x86.ActiveCfg = Debug|Win32
+		{BCD587BF-B2B9-4477-9276-96916BE248EC}.Debug|x86.Build.0 = Debug|Win32
+		{BCD587BF-B2B9-4477-9276-96916BE248EC}.Release|x64.ActiveCfg = Release|x64
+		{BCD587BF-B2B9-4477-9276-96916BE248EC}.Release|x64.Build.0 = Release|x64
+		{BCD587BF-B2B9-4477-9276-96916BE248EC}.Release|x86.ActiveCfg = Release|Win32
+		{BCD587BF-B2B9-4477-9276-96916BE248EC}.Release|x86.Build.0 = Release|Win32
+		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Debug|x64.ActiveCfg = Debug|x64
+		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Debug|x64.Build.0 = Debug|x64
+		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Debug|x86.ActiveCfg = Debug|Win32
+		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Debug|x86.Build.0 = Debug|Win32
+		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Release|x64.ActiveCfg = Release|x64
+		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Release|x64.Build.0 = Release|x64
+		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Release|x86.ActiveCfg = Release|Win32
+		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4988C892-AF06-4B15-BF14-EEAC31E96FDB} = {7FA90F31-8CFF-47F7-8EF0-853DBA6933EA}
+		{A23DAF3C-6FE8-4537-8A76-D79DF32D5E93} = {5F4B2579-6AEB-4A3D-9794-A06293E66D39}
+		{D71A71F7-DCEB-4066-87B9-6766FE0648CC} = {5F4B2579-6AEB-4A3D-9794-A06293E66D39}
+		{BCD587BF-B2B9-4477-9276-96916BE248EC} = {7D3C9D68-8523-4357-B9D7-D75BC567958D}
+		{9EFA1FF9-CC26-45BC-9FF9-FFB4A52FD5A8} = {5F4B2579-6AEB-4A3D-9794-A06293E66D39}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6E7842D6-B912-4FA7-9F77-B9CDF22E6100}
