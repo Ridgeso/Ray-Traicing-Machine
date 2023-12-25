@@ -5,11 +5,11 @@
 #include <backends/imgui_impl_glfw.h>
 #include <glad/glad.h>
 
-namespace RT::Instance
+namespace RT
 {
-	
-	bool Window::Init()
-	{
+
+    bool Window::Init()
+    {
         if (!glfwInit())
             return false;
 
@@ -51,26 +51,26 @@ namespace RT::Instance
 
         io.Fonts->Build();
 
-		return true;
-	}
+        return true;
+    }
 
-	void Window::Destroy()
-	{
+    void Window::Destroy()
+    {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
 
         glfwDestroyWindow(window);
         glfwTerminate();
-	}
+    }
 
-	bool Window::Update()
-	{
+    bool Window::Update()
+    {
         glfwPollEvents();
         glfwSwapBuffers(window);
 
-		return !glfwWindowShouldClose(window);
-	}
+        return !glfwWindowShouldClose(window);
+    }
 
     bool Window::PullEvents()
     {

@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <imgui.h>
 
-#include "Instance/Window.h"
+#include "Window.h"
 #include "Renderer.h"
 
 namespace RT
@@ -27,7 +27,7 @@ namespace RT
 		float lastFrameDuration;
 		float appFrameDuration;
 		ImVec2 viewportSize;
-		Instance::Window mainWindow;
+		Window mainWindow;
 		Render::Renderer renderer;
 		Render::Camera camera;
 		Render::Scene scene;
