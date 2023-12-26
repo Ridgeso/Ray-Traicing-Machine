@@ -9,7 +9,7 @@ namespace RT::Render
 	class Camera
 	{
 	public:
-		#pragma pack(1)
+		#pragma pack(push, 1)
 		struct Spec
 		{
 			glm::mat4 invProjection;
@@ -17,6 +17,7 @@ namespace RT::Render
 			glm::vec3 position;
 			float padding[1];
 		};
+		#pragma pack(pop)
 
 	public:
 		Camera(float fov, float near, float far);

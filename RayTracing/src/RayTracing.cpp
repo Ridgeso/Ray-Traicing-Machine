@@ -1,9 +1,9 @@
 #define ENTRY_POINT
-#include "Engine.h"
-#include <iostream>
+#include <Engine.h>
 
 namespace RT
 {
+	
 	class RayTracingClient : public Application
 	{
 	public:
@@ -19,6 +19,9 @@ namespace RT
 
 	Application* CreateApplication(ApplicationCommandLineArgs args)
 	{
-		return new RayTracingClient({});
+		ApplicationSpecs specs = { "Ray Tracing", args };
+
+		return new RayTracingClient(specs);
 	}
+
 }

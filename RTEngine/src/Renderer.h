@@ -10,13 +10,19 @@
 namespace RT::Render
 {
 
+	struct RenderSpecs
+	{
+		int32_t width, height;
+		bool accumulate;
+	};
+
 	class Renderer
 	{
 	public:
-		Renderer();
+		Renderer() = default;
 
-		bool Invalidate(int32_t width, int32_t height);
-		void Devalidate();
+		void Init(const RenderSpecs& specs);
+		void ShutDown();
 
 		bool RecreateRenderer(int32_t width, int32_t height);
 		void Render(const Camera& camera, const Scene& scene);
@@ -49,6 +55,7 @@ namespace RT::Render
 		struct Uniform<void> : UniformBase<> { };
 
 	private:
+		void Resize(int32_t width, int32_t height);
 		void CompileShader(uint32_t shaderID, const std::string& source) const;
 
 	private:

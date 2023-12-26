@@ -5,7 +5,7 @@
 namespace RT::Render
 {
 
-	#pragma pack(1)
+	#pragma pack(push, 1)
 	struct Material
 	{
 		glm::vec3 albedo;
@@ -17,8 +17,9 @@ namespace RT::Render
 		float refractionRatio;
 		float padding2[1];
 	};
+	#pragma pack(pop)
 
-	#pragma pack(1)
+	#pragma pack(push, 1)
 	struct Sphere
 	{
 		glm::vec3 position;
@@ -26,6 +27,7 @@ namespace RT::Render
 		int32_t materialId;
 		float padding[3];
 	};
+	#pragma pack(pop)
 
 	struct Scene
 	{

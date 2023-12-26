@@ -26,14 +26,23 @@ namespace RT
 	Application* Application::MainApp = nullptr;
 
 	Application::Application(ApplicationSpecs specs)
-		: specs(specs), shouldRun(true), lastFrameDuration(0.f), appFrameDuration(0), viewportSize(), camera(45.0f, 0.01f, 100.0f)
+		: specs(specs),
+		shouldRun(true),
+		lastFrameDuration(0.f),
+		appFrameDuration(0),
+		viewportSize(),
+		mainWindow(),
+		camera(45.0f, 0.01f, 100.0f)
 	{
 		MainApp = this;
-		uint32_t seed = 9423262352u;
+		uint32_t seed = 93262352u;
 
-        shouldRun &= mainWindow.Init();
+		WindowSpecs winSpecs = { specs.name, 1280, 720, false };
+		mainWindow.Init(winSpecs);
+
 		glm::ivec2 windowSize = mainWindow.GetSize();
-		shouldRun &= renderer.Invalidate(windowSize.x, windowSize.y);
+		Render::RenderSpecs renderSpecs = { windowSize.x, windowSize.y, false };
+		renderer.Init(renderSpecs);
 
 		scene.materials.emplace_back(Render::Material{ { 0.0f, 0.0f, 0.0f }, 0.0, { 0.0f, 0.0f, 0.0f }, 0.0f,  0.0f, 0.0f, 1.0f });
 		scene.materials.emplace_back(Render::Material{ { 1.0f, 1.0f, 1.0f }, 0.0, { 1.0f, 1.0f, 1.0f }, 0.7f,  0.8f, 0.0f, 1.5f });
@@ -68,8 +77,8 @@ namespace RT
 
 	Application::~Application()
 	{
-		mainWindow.Destroy();
-		renderer.Devalidate();
+		mainWindow.ShutDown();
+		renderer.ShutDown();
 	}
 
 	void Application::Run()
@@ -79,8 +88,9 @@ namespace RT
 			Timer appTimer;
 
 			Render();
+
 			mainWindow.BeginUI();
-                Layout();
+            Layout();
 			mainWindow.EndUI();
 
 			shouldRun &= mainWindow.Update();

@@ -4,5 +4,5 @@
 #include "Window.h"
 
 #ifdef ENTRY_POINT
-#include "Core/EntryPoint.h"
+#include <Core/EntryPoint.h>
 #endif // ENTRY_POINT

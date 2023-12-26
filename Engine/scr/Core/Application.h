@@ -18,6 +18,7 @@ namespace RT
 	struct ApplicationSpecs
 	{
 		std::string name;
+		ApplicationCommandLineArgs args;
 	};
 
 	class Application

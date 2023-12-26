@@ -1,5 +1,4 @@
-﻿#include <glad/glad.h>
-#include <glm/gtc/type_ptr.hpp>
+﻿#include "Renderer.h"
 
 #include <fstream>
 #include <sstream>
@@ -8,67 +7,22 @@
 #include <execution>
 #include <cstddef>
 
-#include "Renderer.h"
+#include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace RT::Render
 {
 
-    Renderer::Renderer()
-        : accumulation(false)
+    void Renderer::Init(const RenderSpecs& specs)
     {
-    }
+        resolutionUni.value = { specs.width, specs.height };
+        accumulation = specs.accumulate;
 
-    bool Renderer::Invalidate(int32_t width, int32_t height)
-    {
-        resolutionUni.value = { width, height };
-
-        glCreateBuffers(1, &screenBufferId);
-        glBindBuffer(GL_ARRAY_BUFFER, screenBufferId);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(s_Screen), s_Screen, GL_STATIC_DRAW);
-        
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertices), (void*)offsetof(Vertices, Coords));
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertices), (void*)offsetof(Vertices, TexCoords));
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        glCreateFramebuffers(1, &frameBufferId);
-        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
-
-        #define AttachColorTexture(TexId, Format, Width, Height) \
-            glGenTextures(1, &TexId); \
-            glBindTexture(GL_TEXTURE_2D, TexId); \
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); \
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); \
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); \
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); \
-            glTexImage2D(GL_TEXTURE_2D, 0, Format, Width, Height, 0, GL_RGBA, GL_FLOAT, nullptr); \
-            glBindTexture(GL_TEXTURE_2D, 0)
-
-        AttachColorTexture(accumulationId, GL_RGBA32F, resolutionUni.value.x, resolutionUni.value.y);
-        AttachColorTexture(renderId, GL_RGBA32F, resolutionUni.value.x, resolutionUni.value.y);
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, accumulationId, 0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, renderId, 0);
-
-        glGenRenderbuffers(1, &renderBufferId);
-        glBindRenderbuffer(GL_RENDERBUFFER, renderBufferId);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, resolutionUni.value.x, resolutionUni.value.y);
-        glBindRenderbuffer(GL_RENDERBUFFER, 0);
-        
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBufferId);
-
-        constexpr uint32_t buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-        glDrawBuffers(2, buffers);
-
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            return false;
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        Resize(specs.width, specs.height);
 
         std::ifstream shaders("../RTEngine/shaders/RayTracing.shader", std::ios::in);
         if (!shaders.is_open())
-            return false;
+            return;
 
         std::string line;
         enum { Vertex = 0, Fragment = 1 } shaderType;
@@ -114,11 +68,9 @@ namespace RT::Render
         glGenBuffers(1, &cameraStorage);
         glGenBuffers(1, &materialsStorage);
         glGenBuffers(1, &spheresStorage);
-
-        return true;
     }
 
-    void Renderer::Devalidate()
+    void Renderer::ShutDown()
     {
         glDeleteBuffers(1, &cameraStorage);
         glDeleteBuffers(1, &materialsStorage);
@@ -134,13 +86,14 @@ namespace RT::Render
 
     bool Renderer::RecreateRenderer(int32_t width, int32_t height)
     {
-        if (resolutionUni.value != glm::ivec2(width, height))
-        {
-            ResetFrame();
-            Devalidate();
-            return Invalidate(width, height);
-        }
-        return true;
+        if (resolutionUni.value == glm::ivec2(width, height))
+            return true;
+        
+        ResetFrame();
+        ShutDown();
+        Resize(width, height);
+        
+        return false;
     }
 
     void Renderer::Render(const Camera& camera, const Scene& scene)
@@ -202,6 +155,55 @@ namespace RT::Render
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    void Renderer::Resize(int32_t width, int32_t height)
+    {
+        resolutionUni.value = { width, height };
+
+        glCreateBuffers(1, &screenBufferId);
+        glBindBuffer(GL_ARRAY_BUFFER, screenBufferId);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(s_Screen), s_Screen, GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertices), (void*)offsetof(Vertices, Coords));
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertices), (void*)offsetof(Vertices, TexCoords));
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        glCreateFramebuffers(1, &frameBufferId);
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+
+        #define AttachColorTexture(TexId, Format, Width, Height)                                  \
+            glGenTextures(1, &TexId);                                                             \
+            glBindTexture(GL_TEXTURE_2D, TexId);                                                  \
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);                    \
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);                    \
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);                  \
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);                  \
+            glTexImage2D(GL_TEXTURE_2D, 0, Format, Width, Height, 0, GL_RGBA, GL_FLOAT, nullptr); \
+            glBindTexture(GL_TEXTURE_2D, 0)
+
+        AttachColorTexture(accumulationId, GL_RGBA32F, resolutionUni.value.x, resolutionUni.value.y);
+        AttachColorTexture(renderId, GL_RGBA32F, resolutionUni.value.x, resolutionUni.value.y);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, accumulationId, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, renderId, 0);
+
+        glGenRenderbuffers(1, &renderBufferId);
+        glBindRenderbuffer(GL_RENDERBUFFER, renderBufferId);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, resolutionUni.value.x, resolutionUni.value.y);
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBufferId);
+
+        constexpr uint32_t buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+        glDrawBuffers(2, buffers);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            return;
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 

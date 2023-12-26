@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <string>
 
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
@@ -7,14 +8,21 @@
 namespace RT
 {
 
+	struct WindowSpecs
+	{
+		std::string titel;
+		int32_t width, height;
+		bool isMinimized;
+	};
+
 	class Window
 	{
 	public:
 		Window() = default;
 		~Window() = default;
 
-		bool Init();
-		void Destroy();
+		void Init(const WindowSpecs& specs);
+		void ShutDown();
 
 		bool Update();
 		bool PullEvents();
@@ -35,8 +43,12 @@ namespace RT
 		void WindowResize();
 
 	private:
-		int32_t width = 0, height = 0;
-		GLFWwindow* window = nullptr;
+		std::string title;
+		int32_t width, height;
+
+		bool isMinimized;
+
+		GLFWwindow* window;
 	};
 
 }

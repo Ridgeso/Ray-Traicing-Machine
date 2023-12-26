@@ -8,25 +8,28 @@
 namespace RT
 {
 
-    bool Window::Init()
+    void Window::Init(const WindowSpecs& specs)
     {
         if (!glfwInit())
-            return false;
+            return;
 
-        width = 1280;
-        height = 720;
-        window = glfwCreateWindow(width, height, "Ray Tracing", NULL, NULL);
+        title = specs.titel;
+        width = specs.width;
+        height = specs.height;
+        isMinimized = specs.isMinimized;
+
+        window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
         if (!window)
         {
             glfwTerminate();
-            return false;
+            return;
         }
 
         glfwMakeContextCurrent(window);
         glfwSwapInterval(0);
 
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-            return false;
+            return;
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -50,11 +53,9 @@ namespace RT
         ImGui_ImplOpenGL3_Init("#version 430 core");
 
         io.Fonts->Build();
-
-        return true;
     }
 
-    void Window::Destroy()
+    void Window::ShutDown()
     {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
