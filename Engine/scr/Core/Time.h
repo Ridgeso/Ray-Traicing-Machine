@@ -3,7 +3,11 @@
 
 namespace RT
 {
-	using namespace std::chrono;
+
+	namespace
+	{
+		using namespace std::chrono;
+	}
 
 	class Timer
 	{
@@ -16,12 +20,13 @@ namespace RT
 
 		float Ellapsed() const
 		{
-			return duration_cast<nanoseconds>(high_resolution_clock::now() - timePoint).count() * 1e-6f;
+			return duration_cast<nanoseconds>(high_resolution_clock::now() - timePoint).count() * oneMicroseconds;
 		}
 
 	private:
-		std::chrono::time_point<high_resolution_clock> timePoint;
-	};
+		time_point<high_resolution_clock> timePoint;
 
+		static constexpr float oneMicroseconds = 1e-6f;
+	};
 
 }

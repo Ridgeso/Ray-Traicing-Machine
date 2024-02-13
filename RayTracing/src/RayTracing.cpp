@@ -1,27 +1,22 @@
 #define ENTRY_POINT
 #include <Engine.h>
 
-namespace RT
+class RayTracingClient : public RT::Application
 {
-	
-	class RayTracingClient : public Application
-	{
-	public:
-		RayTracingClient(ApplicationSpecs specs)
-			: Application(specs)
-		{}
+public:
+	RayTracingClient(RT::ApplicationSpecs specs)
+		: Application(specs)
+	{}
 
-		~RayTracingClient() {}
+	~RayTracingClient() {}
 
-	private:
+private:
 
-	};
+};
 
-	Application* CreateApplication(ApplicationCommandLineArgs args)
-	{
-		ApplicationSpecs specs = { "Ray Tracing", args };
+RT::Application* RT::CreateApplication(RT::ApplicationCommandLineArgs args)
+{
+	RT::ApplicationSpecs specs = { "Ray Tracing", true, args };
 
-		return new RayTracingClient(specs);
-	}
-
+	return new RayTracingClient(specs);
 }

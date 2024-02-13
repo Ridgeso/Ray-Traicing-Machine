@@ -20,7 +20,7 @@ namespace RT::Render
 
         Resize(specs.width, specs.height);
 
-        std::ifstream shaders("../RTEngine/shaders/RayTracing.shader", std::ios::in);
+        std::ifstream shaders("..\\Engine\\assets\\shaders\\RayTracing.shader", std::ios::in);
         if (!shaders.is_open())
             return;
 

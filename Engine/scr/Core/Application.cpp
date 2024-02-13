@@ -27,7 +27,6 @@ namespace RT
 
 	Application::Application(ApplicationSpecs specs)
 		: specs(specs),
-		shouldRun(true),
 		lastFrameDuration(0.f),
 		appFrameDuration(0),
 		viewportSize(),
@@ -83,7 +82,7 @@ namespace RT
 
 	void Application::Run()
 	{
-		while (shouldRun)
+		while (specs.isRunning)
 		{
 			Timer appTimer;
 
@@ -93,8 +92,8 @@ namespace RT
             Layout();
 			mainWindow.EndUI();
 
-			shouldRun &= mainWindow.Update();
-			shouldRun &= mainWindow.PullEvents();
+			specs.isRunning &= mainWindow.Update();
+			specs.isRunning &= mainWindow.PullEvents();
 
 			appFrameDuration = appTimer.Ellapsed();
 		}

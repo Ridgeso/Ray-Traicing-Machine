@@ -18,6 +18,7 @@ namespace RT
 	struct ApplicationSpecs
 	{
 		std::string name;
+		bool isRunning;
 		ApplicationCommandLineArgs args;
 	};
 
@@ -36,7 +37,6 @@ namespace RT
 
 	private:
 		ApplicationSpecs specs;
-		bool shouldRun;
 		float lastFrameDuration;
 		float appFrameDuration;
 		ImVec2 viewportSize;
