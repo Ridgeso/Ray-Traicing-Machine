@@ -1,4 +1,4 @@
-#include "Window.h"
+#include "GlfwWindow.h"
 
 #include <imgui.h>
 #include <backends/imgui_impl_opengl3.h>
@@ -8,7 +8,7 @@
 namespace RT
 {
 
-    void Window::Init(const WindowSpecs& specs)
+    void GlfwWindow::init(const WindowSpecs& specs)
     {
         if (!glfwInit())
             return;
@@ -31,6 +31,99 @@ namespace RT
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
             return;
 
+        initImGui();
+    }
+
+    void GlfwWindow::shutDown()
+    {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+
+        glfwDestroyWindow(window);
+        glfwTerminate();
+    }
+
+    bool GlfwWindow::update()
+    {
+        glfwPollEvents();
+        glfwSwapBuffers(window);
+
+        return !glfwWindowShouldClose(window);
+    }
+
+    bool GlfwWindow::pullEvents()
+    {
+        windowResize();
+        return true;
+    }
+
+    void GlfwWindow::beginUI()
+    {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+    }
+
+    void GlfwWindow::endUI()
+    {
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            GLFWwindow* backup_current_context = glfwGetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(backup_current_context);
+        }
+    }
+
+    glm::vec2 GlfwWindow::getMousePos() const
+    {
+        double x, y;
+        glfwGetCursorPos(window, &x, &y);
+        return { (float)x, (float)y };
+    }
+
+    bool GlfwWindow::isKeyPressed(int32_t key) const
+    {
+        return glfwGetKey(window, key) == GLFW_PRESS;
+    }
+
+    bool GlfwWindow::isMousePressed(int32_t key) const
+    {
+        return glfwGetMouseButton(window, key) == GLFW_PRESS;
+    }
+
+    glm::ivec2 GlfwWindow::getSize() const
+    {
+        int32_t width, height;
+        glfwGetWindowSize(window, &width, &height);
+        return { width, height };
+    }
+
+    void GlfwWindow::cursorMode(int32_t state) const
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, state);
+    }
+
+    void GlfwWindow::windowResize()
+    {
+        glm::ivec2 winSize = getSize();
+        if (winSize.x != width || winSize.y != height)
+        {
+            width = winSize.x;
+            height = winSize.y;
+            glViewport(0, 0, width, height);
+        }
+    }
+
+    void GlfwWindow::initImGui()
+    {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
 
@@ -53,94 +146,6 @@ namespace RT
         ImGui_ImplOpenGL3_Init("#version 430 core");
 
         io.Fonts->Build();
-    }
-
-    void Window::ShutDown()
-    {
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
-
-        glfwDestroyWindow(window);
-        glfwTerminate();
-    }
-
-    bool Window::Update()
-    {
-        glfwPollEvents();
-        glfwSwapBuffers(window);
-
-        return !glfwWindowShouldClose(window);
-    }
-
-    bool Window::PullEvents()
-    {
-        WindowResize();
-        return true;
-    }
-
-    void Window::BeginUI()
-    {
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-    }
-
-    void Window::EndUI()
-    {
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            GLFWwindow* backup_current_context = glfwGetCurrentContext();
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(backup_current_context);
-        }
-    }
-
-    glm::vec2 Window::GetMousePos() const
-    {
-        double x, y;
-        glfwGetCursorPos(window, &x, &y);
-        return { (float)x, (float)y };
-    }
-
-    bool Window::IsKeyPressed(int32_t key) const
-    {
-        return glfwGetKey(window, key) == GLFW_PRESS;
-    }
-
-    bool Window::IsMousePressed(int32_t key) const
-    {
-        return glfwGetMouseButton(window, key) == GLFW_PRESS;
-    }
-
-    glm::ivec2 Window::GetSize() const
-    {
-        int32_t width, height;
-        glfwGetWindowSize(window, &width, &height);
-        return { width, height };
-    }
-
-    void Window::CursorMode(int32_t state) const
-    {
-        glfwSetInputMode(window, GLFW_CURSOR, state);
-    }
-
-    void Window::WindowResize()
-    {
-        glm::ivec2 winSize = GetSize();
-        if (winSize.x != width || winSize.y != height)
-        {
-            width = winSize.x;
-            height = winSize.y;
-            glViewport(0, 0, width, height);
-        }
     }
 
 }

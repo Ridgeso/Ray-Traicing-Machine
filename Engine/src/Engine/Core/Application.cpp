@@ -1,11 +1,11 @@
+#include <iostream>
+
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <GLFW/glfw3.h>
 
 #include "Application.h"
 #include "Time.h"
-#include "Renderer.h"
-#include <iostream>
 
 namespace RT
 {
@@ -30,16 +30,16 @@ namespace RT
 		lastFrameDuration(0.f),
 		appFrameDuration(0),
 		viewportSize(),
-		mainWindow(),
+		mainWindow(createWindow()),
 		camera(45.0f, 0.01f, 100.0f)
 	{
 		MainApp = this;
 		uint32_t seed = 93262352u;
 
 		WindowSpecs winSpecs = { specs.name, 1280, 720, false };
-		mainWindow.Init(winSpecs);
+		mainWindow->init(winSpecs);
 
-		glm::ivec2 windowSize = mainWindow.GetSize();
+		glm::ivec2 windowSize = mainWindow->getSize();
 		Render::RenderSpecs renderSpecs = { windowSize.x, windowSize.y, false };
 		renderer.Init(renderSpecs);
 
@@ -76,7 +76,7 @@ namespace RT
 
 	Application::~Application()
 	{
-		mainWindow.ShutDown();
+		mainWindow->shutDown();
 		renderer.ShutDown();
 	}
 
@@ -88,12 +88,12 @@ namespace RT
 
 			Render();
 
-			mainWindow.BeginUI();
+			mainWindow->beginUI();
             Layout();
-			mainWindow.EndUI();
+			mainWindow->endUI();
 
-			specs.isRunning &= mainWindow.Update();
-			specs.isRunning &= mainWindow.PullEvents();
+			specs.isRunning &= mainWindow->update();
+			specs.isRunning &= mainWindow->pullEvents();
 
 			appFrameDuration = appTimer.Ellapsed();
 		}
@@ -181,7 +181,7 @@ namespace RT
 	void Application::Render()
 	{
 		UpdateView(appFrameDuration / 1000.0f);
-		glm::ivec2 winSize = mainWindow.GetSize();
+		glm::ivec2 winSize = mainWindow->getSize();
 		renderer.RecreateRenderer(winSize.x, winSize.y);
 
 		Timer timeit;
@@ -201,52 +201,52 @@ namespace RT
 		glm::vec3 right = glm::cross(forward, up);
 		bool moved = false;
 
-		glm::vec2 newMousePos = mainWindow.GetMousePos();
+		glm::vec2 newMousePos = mainWindow->getMousePos();
 		glm::vec2 mouseDelta = (newMousePos - lastMousePos) * mouseSenisity;
 		lastMousePos = newMousePos;
 
-		if (mainWindow.IsKeyPressed(GLFW_KEY_W))
+		if (mainWindow->isKeyPressed(GLFW_KEY_W))
 		{
 			glm::vec3 step = camera.GetPosition() + forward * speed * ts;
 			camera.SetPosition(step);
 			moved = true;
 		}
-		if (mainWindow.IsKeyPressed(GLFW_KEY_S))
+		if (mainWindow->isKeyPressed(GLFW_KEY_S))
 		{
 			glm::vec3 step = camera.GetPosition() - forward * speed * ts;
 			camera.SetPosition(step);
 			moved = true;
 		}
 
-		if (mainWindow.IsKeyPressed(GLFW_KEY_D))
+		if (mainWindow->isKeyPressed(GLFW_KEY_D))
 		{
 			glm::vec3 step = camera.GetPosition() + right * speed * ts;
 			camera.SetPosition(step);
 			moved = true;
 		}
-		if (mainWindow.IsKeyPressed(GLFW_KEY_A))
+		if (mainWindow->isKeyPressed(GLFW_KEY_A))
 		{
 			glm::vec3 step = camera.GetPosition() - right * speed * ts;
 			camera.SetPosition(step);
 			moved = true;
 		}
 
-		if (mainWindow.IsKeyPressed(GLFW_KEY_Q))
+		if (mainWindow->isKeyPressed(GLFW_KEY_Q))
 		{
 			glm::vec3 step = camera.GetPosition() + up * speed * ts;
 			camera.SetPosition(step);
 			moved = true;
 		}
-		if (mainWindow.IsKeyPressed(GLFW_KEY_E))
+		if (mainWindow->isKeyPressed(GLFW_KEY_E))
 		{
 			glm::vec3 step = camera.GetPosition() - up * speed * ts;
 			camera.SetPosition(step);
 			moved = true;
 		}
 
-		if (mainWindow.IsMousePressed(GLFW_MOUSE_BUTTON_RIGHT))
+		if (mainWindow->isMousePressed(GLFW_MOUSE_BUTTON_RIGHT))
 		{
-			mainWindow.CursorMode(GLFW_CURSOR_DISABLED);
+			mainWindow->cursorMode(GLFW_CURSOR_DISABLED);
 			if (mouseDelta != glm::vec2(0.0f))
 			{
 				mouseDelta *= rotationSpeed;
@@ -260,7 +260,7 @@ namespace RT
 		}
 		else
 		{
-			mainWindow.CursorMode(GLFW_CURSOR_NORMAL);
+			mainWindow->cursorMode(GLFW_CURSOR_NORMAL);
 		}
 
 		if (moved)
