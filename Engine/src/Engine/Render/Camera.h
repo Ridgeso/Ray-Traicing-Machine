@@ -3,7 +3,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace RT::Render
+namespace RT
 {
 
 	class Camera

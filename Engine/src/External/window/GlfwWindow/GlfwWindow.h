@@ -34,7 +34,6 @@ namespace RT
 		void cursorMode(int32_t state) const override;
 
 	private:
-		void windowResize();
 		void initImGui();
 
 	private:

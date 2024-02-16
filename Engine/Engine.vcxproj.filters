@@ -18,16 +18,16 @@
     <ClCompile Include="src\Engine\Core\Application.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\External\render\src\impl\gladImpl.cpp">
+    <ClCompile Include="src\External\render\impl\gladImpl.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\External\render\src\Camera.cpp">
+    <ClCompile Include="src\Engine\Render\Camera.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\External\render\src\Renderer.cpp">
+    <ClCompile Include="src\External\render\OpenGl\OpenGlRenderer.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\External\render\src\Scene.cpp">
+    <ClCompile Include="src\Engine\Render\Scene.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="src\External\window\ImGuiBuild.cpp">
@@ -37,6 +37,9 @@
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="src\Engine\Window\Window.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Render\Renderer.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
   </ItemGroup>
@@ -53,13 +56,13 @@
     <ClInclude Include="src\Engine\Engine.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="src\External\render\src\Camera.h">
+    <ClInclude Include="src\Engine\Render\Camera.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="src\External\render\src\Renderer.h">
+    <ClInclude Include="src\External\render\OpenGl\OpenGlRenderer.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="src\External\render\src\Scene.h">
+    <ClInclude Include="src\Engine\Render\Scene.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
     <ClInclude Include="src\External\window\GlfwWindow\GlfwWindow.h">
@@ -72,6 +75,9 @@
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine\Core\Base.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Render\Renderer.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
   </ItemGroup>

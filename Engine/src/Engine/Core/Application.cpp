@@ -31,6 +31,7 @@ namespace RT
 		appFrameDuration(0),
 		viewportSize(),
 		mainWindow(createWindow()),
+		renderer(createRenderer()),
 		camera(45.0f, 0.01f, 100.0f)
 	{
 		MainApp = this;
@@ -40,32 +41,32 @@ namespace RT
 		mainWindow->init(winSpecs);
 
 		glm::ivec2 windowSize = mainWindow->getSize();
-		Render::RenderSpecs renderSpecs = { windowSize.x, windowSize.y, false };
-		renderer.Init(renderSpecs);
+		RenderSpecs renderSpecs = { windowSize.x, windowSize.y, false };
+		renderer->init(renderSpecs);
 
-		scene.materials.emplace_back(Render::Material{ { 0.0f, 0.0f, 0.0f }, 0.0, { 0.0f, 0.0f, 0.0f }, 0.0f,  0.0f, 0.0f, 1.0f });
-		scene.materials.emplace_back(Render::Material{ { 1.0f, 1.0f, 1.0f }, 0.0, { 1.0f, 1.0f, 1.0f }, 0.7f,  0.8f, 0.0f, 1.5f });
-		scene.materials.emplace_back(Render::Material{ { 0.2f, 0.5f, 0.7f }, 0.0, { 0.2f, 0.5f, 0.7f }, 0.05f, 0.3f, 0.0f, 1.0f });
-		scene.materials.emplace_back(Render::Material{ { 0.8f, 0.6f, 0.5f }, 0.0, { 0.8f, 0.6f, 0.5f }, 0.0f,  0.3f, 1.0f, 1.0f });
-		scene.materials.emplace_back(Render::Material{ { 0.4f, 0.3f, 0.8f }, 0.0, { 0.8f, 0.6f, 0.5f }, 0.0f,  0.3f, 0.0f, 1.0f });
+		scene.materials.emplace_back(Material{ { 0.0f, 0.0f, 0.0f }, 0.0, { 0.0f, 0.0f, 0.0f }, 0.0f,  0.0f, 0.0f, 1.0f });
+		scene.materials.emplace_back(Material{ { 1.0f, 1.0f, 1.0f }, 0.0, { 1.0f, 1.0f, 1.0f }, 0.7f,  0.8f, 0.0f, 1.5f });
+		scene.materials.emplace_back(Material{ { 0.2f, 0.5f, 0.7f }, 0.0, { 0.2f, 0.5f, 0.7f }, 0.05f, 0.3f, 0.0f, 1.0f });
+		scene.materials.emplace_back(Material{ { 0.8f, 0.6f, 0.5f }, 0.0, { 0.8f, 0.6f, 0.5f }, 0.0f,  0.3f, 1.0f, 1.0f });
+		scene.materials.emplace_back(Material{ { 0.4f, 0.3f, 0.8f }, 0.0, { 0.8f, 0.6f, 0.5f }, 0.0f,  0.3f, 0.0f, 1.0f });
 		
-		scene.spheres.emplace_back(Render::Sphere{ { 0.0f, 0.0f, -2.0f }, 1.0f, 1 });
-		scene.spheres.emplace_back(Render::Sphere{ { 0.0f, -2001.0f, -2.0f }, 2000.0f, 2 });
-		scene.spheres.emplace_back(Render::Sphere{ { 2.5f, 0.0f, -2.0f }, 1.0f, 3 });
-		scene.spheres.emplace_back(Render::Sphere{ { -2.5f, 0.0f, -2.0f }, 1.0f, 4 });
+		scene.spheres.emplace_back(Sphere{ { 0.0f, 0.0f, -2.0f }, 1.0f, 1 });
+		scene.spheres.emplace_back(Sphere{ { 0.0f, -2001.0f, -2.0f }, 2000.0f, 2 });
+		scene.spheres.emplace_back(Sphere{ { 2.5f, 0.0f, -2.0f }, 1.0f, 3 });
+		scene.spheres.emplace_back(Sphere{ { -2.5f, 0.0f, -2.0f }, 1.0f, 4 });
 
 		auto getRandPos = [&seed](float rad) { return FastRandom(seed)* rad - rad / 2; };
 
 		for (int i = 0; i < 70; i++)
 		{
-			scene.materials.emplace_back(Render::Material{ });
+			scene.materials.emplace_back(Material{ });
 			scene.materials[scene.materials.size() - 1].albedo = { FastRandom(seed), FastRandom(seed), FastRandom(seed) };
 			scene.materials[scene.materials.size() - 1].emissionColor = { FastRandom(seed), FastRandom(seed), FastRandom(seed) };
 			scene.materials[scene.materials.size() - 1].roughness = FastRandom(seed) > 0.9 ? 0.f : FastRandom(seed);
 			scene.materials[scene.materials.size() - 1].emissionPower = FastRandom(seed) > 0.9 ? FastRandom(seed) : 0.f;
 			scene.materials[scene.materials.size() - 1].refractionRatio = 1.0f;
 		
-			scene.spheres.emplace_back(Render::Sphere{ });
+			scene.spheres.emplace_back(Sphere{ });
 			scene.spheres[scene.spheres.size() - 1].position = { getRandPos(10.0f), -0.75, getRandPos(10.0f) - 2 };
 			scene.spheres[scene.spheres.size() - 1].radius = 0.25;
 			scene.spheres[scene.spheres.size() - 1].materialId = scene.materials.size() - 1;
@@ -77,19 +78,19 @@ namespace RT
 	Application::~Application()
 	{
 		mainWindow->shutDown();
-		renderer.ShutDown();
+		renderer->shutDown();
 	}
 
-	void Application::Run()
+	void Application::run()
 	{
 		while (specs.isRunning)
 		{
 			Timer appTimer;
 
-			Render();
+			update();
 
 			mainWindow->beginUI();
-            Layout();
+            layout();
 			mainWindow->endUI();
 
 			specs.isRunning &= mainWindow->update();
@@ -99,22 +100,22 @@ namespace RT
 		}
 	}
 
-    void Application::Layout()
+    void Application::layout()
     {
 		ImGui::Begin("Settings");
 		ImGui::Text("App frame took: %.3fms", appFrameDuration);
 		ImGui::Text("Last render took: %.3fms", lastFrameDuration);
-		ImGui::Text("Frames: %d", renderer.GetFrames());
-		ImGui::DragInt("Bounces Limit", (int32_t*)&renderer.MaxBounces(), 1, 1, 15);
-		ImGui::DragInt("Precalculated Frames Limit", (int32_t*)&renderer.MaxFrames(), 1, 1, 15);
+		ImGui::Text("Frames: %d", renderer->getFrames());
+		ImGui::DragInt("Bounces Limit", (int32_t*)&renderer->maxBounces(), 1, 1, 15);
+		ImGui::DragInt("Precalculated Frames Limit", (int32_t*)&renderer->maxFrames(), 1, 1, 15);
 		if (ImGui::Button("Reset"))
-			renderer.ResetFrame();
-		ImGui::Checkbox("Accumulate", &renderer.Accumulation());
-		ImGui::Checkbox("Draw Environment", &renderer.DrawEnvironment());
+			renderer->resetFrame();
+		ImGui::Checkbox("Accumulate", &renderer->getAccumulation());
+		ImGui::Checkbox("Draw Environment", &renderer->drawEnvironment());
 		if (ImGui::Button("Add Material"))
-			scene.materials.emplace_back(Render::Material{ { 0.0f, 0.0f, 0.0f }, 0.0, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f });
+			scene.materials.emplace_back(Material{ { 0.0f, 0.0f, 0.0f }, 0.0, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f });
 		if (ImGui::Button("Add Sphere"))
-			scene.spheres.emplace_back(Render::Sphere{ { 0.0f, 0.0f, -2.0f }, 1.0f, 0 });
+			scene.spheres.emplace_back(Sphere{ { 0.0f, 0.0f, -2.0f }, 1.0f, 0 });
 		ImGui::End();
 
 		ImGui::Begin("Scene");
@@ -123,7 +124,7 @@ namespace RT
 		for (size_t i = 1; i < scene.materials.size(); i++)
 		{
 			ImGui::PushID((int32_t)i);
-			Render::Material& material = scene.materials[i];
+			Material& material = scene.materials[i];
 
 			ImGui::ColorEdit3("Albedo", glm::value_ptr(material.albedo));
 			ImGui::ColorEdit3("Emission Color", glm::value_ptr(material.emissionColor));
@@ -142,7 +143,7 @@ namespace RT
 		for (size_t i = 0; i < scene.spheres.size(); i++)
 		{
 			ImGui::PushID((int32_t)i);
-			Render::Sphere& sphere = scene.spheres[i];
+			Sphere& sphere = scene.spheres[i];
 
 			ImGui::DragFloat3("Position", glm::value_ptr(sphere.position), 0.1f);
 			ImGui::DragFloat("Radius", &sphere.radius, 0.01f, 0.0f, std::numeric_limits<float>::max());
@@ -161,11 +162,11 @@ namespace RT
 		if (viewPort.x != viewportSize.x || viewPort.y != viewportSize.y)
 		{
 			viewportSize = viewPort;
-			renderer.ResetFrame();
+			renderer->resetFrame();
 		}
 
 		ImGui::Image(
-			(ImTextureID)renderer.GetDescriptor(),
+			(ImTextureID)renderer->getDescriptor(),
 			viewportSize,
 			ImVec2(0, 1),
 			ImVec2(1, 0)
@@ -178,19 +179,19 @@ namespace RT
 		//ImGui::ShowDemoWindow(&demo);
 	}
 
-	void Application::Render()
+	void Application::update()
 	{
-		UpdateView(appFrameDuration / 1000.0f);
+		updateView(appFrameDuration / 1000.0f);
 		glm::ivec2 winSize = mainWindow->getSize();
-		renderer.RecreateRenderer(winSize.x, winSize.y);
+		renderer->recreateRenderer(winSize);
 
 		Timer timeit;
 		camera.ResizeCamera((int32_t)viewportSize.x, (int32_t)viewportSize.y);
-		renderer.Render(camera, scene);
+		renderer->render(camera, scene);
 		lastFrameDuration = timeit.Ellapsed();
 	}
 
-	void Application::UpdateView(float ts)
+	void Application::updateView(float ts)
 	{
 		const float speed = 5.0f;
 		const float mouseSenisity = 0.003f;
@@ -266,7 +267,7 @@ namespace RT
 		if (moved)
 		{
 			camera.RecalculateInvView();
-			renderer.ResetFrame();
+			renderer->resetFrame();
 		}
 	}
 

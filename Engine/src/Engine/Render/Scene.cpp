@@ -1,6 +1,6 @@
 #include "Scene.h"
 
-namespace RT::Render
+namespace RT
 {
 
 

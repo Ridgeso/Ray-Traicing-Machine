@@ -28,9 +28,6 @@ namespace RT
         glfwMakeContextCurrent(window);
         glfwSwapInterval(0);
 
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-            return;
-
         initImGui();
     }
 
@@ -54,7 +51,6 @@ namespace RT
 
     bool GlfwWindow::pullEvents()
     {
-        windowResize();
         return true;
     }
 
@@ -109,17 +105,6 @@ namespace RT
     void GlfwWindow::cursorMode(int32_t state) const
     {
         glfwSetInputMode(window, GLFW_CURSOR, state);
-    }
-
-    void GlfwWindow::windowResize()
-    {
-        glm::ivec2 winSize = getSize();
-        if (winSize.x != width || winSize.y != height)
-        {
-            width = winSize.x;
-            height = winSize.y;
-            glViewport(0, 0, width, height);
-        }
     }
 
     void GlfwWindow::initImGui()

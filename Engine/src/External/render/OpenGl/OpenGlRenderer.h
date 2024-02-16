@@ -4,38 +4,32 @@
 #include <random>
 #include <glm/glm.hpp>
 
-#include "Camera.h"
-#include "Scene.h"
+#include "Engine/Render/Renderer.h"
 
-namespace RT::Render
+namespace RT
 {
 
-	struct RenderSpecs
-	{
-		int32_t width, height;
-		bool accumulate;
-	};
-
-	class Renderer
+	class OpenGlRenderer : public Renderer
 	{
 	public:
-		Renderer() = default;
+		OpenGlRenderer() = default;
+		~OpenGlRenderer() = default;
 
-		void Init(const RenderSpecs& specs);
-		void ShutDown();
+		void init(const RenderSpecs& specs) override;
+		void shutDown() override;
 
-		bool RecreateRenderer(int32_t width, int32_t height);
-		void Render(const Camera& camera, const Scene& scene);
+		bool recreateRenderer(const glm::ivec2 size) override;
+		void render(const Camera& camera, const Scene& scene) override;
 
-		void ResetFrame() { frameIndexUni.value = 0; }
-		uint32_t GetFrames() const { return frameIndexUni.value; }
+		void resetFrame() override { frameIndexUni.value = 0; }
+		uint32_t getFrames() const override { return frameIndexUni.value; }
 
-		int32_t GetDescriptor() const { return renderId; }
+		int32_t getDescriptor() const override { return renderId; }
 
-		bool& Accumulation() { return accumulation; }
-		bool& DrawEnvironment() { return drawEnvironmentUni.value; }
-		uint32_t& MaxBounces() { return maxBouncesUni.value; }
-		uint32_t& MaxFrames() { return maxFramesUni.value; }
+		bool& getAccumulation() override { return accumulation; }
+		bool& drawEnvironment() override { return drawEnvironmentUni.value; }
+		uint32_t& maxBounces() override { return maxBouncesUni.value; }
+		uint32_t& maxFrames() override { return maxFramesUni.value; }
 
 	private:
 		template <typename Data = void>
@@ -55,8 +49,9 @@ namespace RT::Render
 		struct Uniform<void> : UniformBase<> { };
 
 	private:
-		void Resize(int32_t width, int32_t height);
-		void CompileShader(uint32_t shaderID, const std::string& source) const;
+		void resize(const glm::ivec2 size);
+		void compileShader(uint32_t shaderID, const std::string& source) const;
+		static void loadOpenGlForGlfw();
 
 	private:
 		bool accumulation;

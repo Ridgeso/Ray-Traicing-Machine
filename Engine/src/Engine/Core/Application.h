@@ -2,10 +2,10 @@
 #include <memory>
 #include <glm/glm.hpp>
 #include <imgui.h>
+#include <Engine/Core/Base.h>
 
-#include "Base.h"
-#include "Engine/window/Window.h"
-#include "External/render/src/Renderer.h"
+#include "Engine/Window/Window.h"
+#include "Engine/Render/Renderer.h"
 
 namespace RT
 {
@@ -29,10 +29,10 @@ namespace RT
 		Application(ApplicationSpecs specs);
 		virtual ~Application();
 
-		void Run();
-		void Layout();
-		void Render();
-		void UpdateView(float ts);
+		void run();
+		void layout();
+		void update();
+		void updateView(float ts);
 
 		static Application& Get() { return *MainApp; }
 
@@ -42,9 +42,9 @@ namespace RT
 		float appFrameDuration;
 		ImVec2 viewportSize;
 		Local<Window> mainWindow;
-		Render::Renderer renderer;
-		Render::Camera camera;
-		Render::Scene scene;
+		Local<Renderer> renderer;
+		Camera camera;
+		Scene scene;
 
 		glm::vec2 lastMousePos;
 		static Application* MainApp;

@@ -2,7 +2,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-namespace RT::Render
+namespace RT
 {
 
 	#pragma pack(push, 1)

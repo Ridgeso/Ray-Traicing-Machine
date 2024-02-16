@@ -20,11 +20,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\Core\Application.cpp" />
+    <ClCompile Include="src\Engine\Render\Renderer.cpp" />
     <ClCompile Include="src\Engine\Window\Window.cpp" />
-    <ClCompile Include="src\External\render\src\Camera.cpp" />
-    <ClCompile Include="src\External\render\src\impl\gladImpl.cpp" />
-    <ClCompile Include="src\External\render\src\Renderer.cpp" />
-    <ClCompile Include="src\External\render\src\Scene.cpp" />
+    <ClCompile Include="src\Engine\Render\Camera.cpp" />
+    <ClCompile Include="src\External\render\impl\gladImpl.cpp" />
+    <ClCompile Include="src\External\render\OpenGl\OpenGlRenderer.cpp" />
+    <ClCompile Include="src\Engine\Render\Scene.cpp" />
     <ClCompile Include="src\External\window\ImGuiBuild.cpp" />
     <ClCompile Include="src\External\window\GlfwWindow\GlfwWindow.cpp" />
   </ItemGroup>
@@ -34,10 +35,11 @@
     <ClInclude Include="src\Engine\Core\EntryPoint.h" />
     <ClInclude Include="src\Engine\Core\Time.h" />
     <ClInclude Include="src\Engine\Engine.h" />
+    <ClInclude Include="src\Engine\Render\Renderer.h" />
     <ClInclude Include="src\Engine\Window\Window.h" />
-    <ClInclude Include="src\External\render\src\Camera.h" />
-    <ClInclude Include="src\External\render\src\Renderer.h" />
-    <ClInclude Include="src\External\render\src\Scene.h" />
+    <ClInclude Include="src\Engine\Render\Camera.h" />
+    <ClInclude Include="src\External\render\OpenGl\OpenGlRenderer.h" />
+    <ClInclude Include="src\Engine\Render\Scene.h" />
     <ClInclude Include="src\External\window\GlfwWindow\GlfwWindow.fwd.h" />
     <ClInclude Include="src\External\window\GlfwWindow\GlfwWindow.h" />
   </ItemGroup>

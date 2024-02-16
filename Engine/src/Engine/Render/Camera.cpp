@@ -2,7 +2,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace RT::Render
+namespace RT
 {
 	const glm::vec3 Camera::Up = glm::vec3(0, 1, 0);
 

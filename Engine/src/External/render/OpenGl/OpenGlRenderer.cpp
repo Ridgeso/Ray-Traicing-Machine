@@ -1,6 +1,4 @@
-﻿#include "Renderer.h"
-
-#include <fstream>
+﻿#include <fstream>
 #include <sstream>
 #include <iostream>
 #include <algorithm>
@@ -9,16 +7,21 @@
 
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <GLFW/glfw3.h>
 
-namespace RT::Render
+#include "OpenGlRenderer.h"
+
+namespace RT
 {
 
-    void Renderer::Init(const RenderSpecs& specs)
+    void OpenGlRenderer::init(const RenderSpecs& specs)
     {
+        loadOpenGlForGlfw();
+
         resolutionUni.value = { specs.width, specs.height };
         accumulation = specs.accumulate;
 
-        Resize(specs.width, specs.height);
+        resize(resolutionUni.value);
 
         std::ifstream shaders("..\\Engine\\assets\\shaders\\RayTracing.shader", std::ios::in);
         if (!shaders.is_open())
@@ -44,8 +47,8 @@ namespace RT::Render
         uint32_t vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
         uint32_t fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
 
-        CompileShader(vertexShaderId, shadersSource[Vertex].str());
-        CompileShader(fragmentShaderId, shadersSource[Fragment].str());
+        compileShader(vertexShaderId, shadersSource[Vertex].str());
+        compileShader(fragmentShaderId, shadersSource[Fragment].str());
         programId = glCreateProgram();
         glAttachShader(programId, vertexShaderId);
         glAttachShader(programId, fragmentShaderId);
@@ -70,7 +73,7 @@ namespace RT::Render
         glGenBuffers(1, &spheresStorage);
     }
 
-    void Renderer::ShutDown()
+    void OpenGlRenderer::shutDown()
     {
         glDeleteBuffers(1, &cameraStorage);
         glDeleteBuffers(1, &materialsStorage);
@@ -84,19 +87,19 @@ namespace RT::Render
         glDeleteFramebuffers(1, &frameBufferId);
     }
 
-    bool Renderer::RecreateRenderer(int32_t width, int32_t height)
+    bool OpenGlRenderer::recreateRenderer(const glm::ivec2 size)
     {
-        if (resolutionUni.value == glm::ivec2(width, height))
+        if (resolutionUni.value == size)
             return true;
         
-        ResetFrame();
-        ShutDown();
-        Resize(width, height);
+        resetFrame();
+        shutDown();
+        resize(size);
         
         return false;
     }
 
-    void Renderer::Render(const Camera& camera, const Scene& scene)
+    void OpenGlRenderer::render(const Camera& camera, const Scene& scene)
     {
         frameIndexUni.value++;
         if (!accumulation)
@@ -158,9 +161,10 @@ namespace RT::Render
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void Renderer::Resize(int32_t width, int32_t height)
+    void OpenGlRenderer::resize(const glm::ivec2 size)
     {
-        resolutionUni.value = { width, height };
+        resolutionUni.value = size;
+        glViewport(0, 0, size.x, size.y);
 
         glCreateBuffers(1, &screenBufferId);
         glBindBuffer(GL_ARRAY_BUFFER, screenBufferId);
@@ -207,7 +211,7 @@ namespace RT::Render
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void Renderer::CompileShader(uint32_t shaderID, const std::string& source) const
+    void OpenGlRenderer::compileShader(uint32_t shaderID, const std::string& source) const
     {
         const char* sourceData = source.c_str();
         int32_t sourceLenght = source.length();
@@ -227,6 +231,11 @@ namespace RT::Render
             glGetShaderInfoLog(shaderID, lenght, &lenght, message.data());
             std::cout << "SHADER ERROR:\n" << message.data() << std::endl;
         }
+    }
+
+    void OpenGlRenderer::loadOpenGlForGlfw()
+    {
+        gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     }
 
 }
