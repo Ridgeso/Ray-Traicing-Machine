@@ -11,7 +11,7 @@
 
 #include "OpenGlRenderer.h"
 
-namespace RT
+namespace RT::OpenGl
 {
 
     void OpenGlRenderer::init(const RenderSpecs& specs)
@@ -22,64 +22,11 @@ namespace RT
         accumulation = specs.accumulate;
 
         resize(resolutionUni.value);
-
-        std::ifstream shaders("..\\Engine\\assets\\shaders\\RayTracing.shader", std::ios::in);
-        if (!shaders.is_open())
-            return;
-
-        std::string line;
-        enum { Vertex = 0, Fragment = 1 } shaderType;
-        std::stringstream shadersSource[2];
-
-        while (std::getline(shaders, line))
-        {
-            if (line.find("###SHADER") != std::string::npos)
-            {
-                if (line.find("(VERTEX)") != std::string::npos)
-                    shaderType = Vertex;
-                else if (line.find("(FRAGMENT)") != std::string::npos)
-                    shaderType = Fragment;
-            }
-            else
-                shadersSource[shaderType] << line << '\n';
-        }
-
-        uint32_t vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
-        uint32_t fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
-
-        compileShader(vertexShaderId, shadersSource[Vertex].str());
-        compileShader(fragmentShaderId, shadersSource[Fragment].str());
-        programId = glCreateProgram();
-        glAttachShader(programId, vertexShaderId);
-        glAttachShader(programId, fragmentShaderId);
-        glLinkProgram(programId);
-        glValidateProgram(programId);
-
-        glDeleteShader(vertexShaderId);
-        glDeleteShader(fragmentShaderId);
-
-        accumulationSamplerUni.ID = glGetUniformLocation(programId, accumulationSamplerUni.name.c_str());
-        renderSamplerUni.ID = glGetUniformLocation(programId, renderSamplerUni.name.c_str());
-        drawEnvironmentUni.ID = glGetUniformLocation(programId, drawEnvironmentUni.name.c_str());
-        maxBouncesUni.ID = glGetUniformLocation(programId, maxBouncesUni.name.c_str());
-        maxFramesUni.ID = glGetUniformLocation(programId, maxFramesUni.name.c_str());
-        frameIndexUni.ID = glGetUniformLocation(programId, frameIndexUni.name.c_str());
-        resolutionUni.ID = glGetUniformLocation(programId, resolutionUni.name.c_str());
-        materialsCountUni.ID = glGetUniformLocation(programId, materialsCountUni.name.c_str());
-        spheresCountUni.ID = glGetUniformLocation(programId, spheresCountUni.name.c_str());
-
-        glGenBuffers(1, &cameraStorage);
-        glGenBuffers(1, &materialsStorage);
-        glGenBuffers(1, &spheresStorage);
     }
 
     void OpenGlRenderer::shutDown()
     {
         clear();
-        glDeleteBuffers(1, &cameraStorage);
-        glDeleteBuffers(1, &materialsStorage);
-        glDeleteBuffers(1, &spheresStorage);
-        glDeleteProgram(programId);
     }
 
     bool OpenGlRenderer::recreateRenderer(const glm::ivec2 size)
@@ -92,50 +39,31 @@ namespace RT
         return false;
     }
 
-    void OpenGlRenderer::render(const Camera& camera, const Scene& scene)
+    void OpenGlRenderer::render(const Camera& camera, const Shader& shader, const Scene& scene)
     {
+        const auto& openGlShader = static_cast<const OpenGlShader&>(shader);
+
         frameIndexUni.value++;
         if (!accumulation)
         {
             frameIndexUni.value = 1;
         }
 
+        openGlShader.use();
+        openGlShader.setUniform(accumulationSamplerUni.name, 1, accumulationSamplerUni.value);
+        openGlShader.setUniform(renderSamplerUni.name, 1, renderSamplerUni.value);
+        openGlShader.setUniform(drawEnvironmentUni.name, 1, (float)drawEnvironmentUni.value);
+        openGlShader.setUniform(maxBouncesUni.name, 1, maxBouncesUni.value);
+        openGlShader.setUniform(maxFramesUni.name, 1, maxFramesUni.value);
+        openGlShader.setUniform(frameIndexUni.name, 1, frameIndexUni.value);
+        openGlShader.setUniform(resolutionUni.name, 1, (glm::vec2)resolutionUni.value);
+        openGlShader.setUniform(cameraStorage.name, sizeof(Camera::Spec), camera.GetSpec());
+        openGlShader.setUniform(materialsCountUni.name, 1, scene.materials.size());
+        openGlShader.setUniform(materialsStorage.name, sizeof(Material) * scene.materials.size(), scene.materials.data());
+        openGlShader.setUniform(spheresCountUni.name, 1, scene.spheres.size());
+        openGlShader.setUniform(spheresStorage.name, sizeof(Sphere) * scene.spheres.size(), scene.spheres.data());
+        
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
-
-        glUseProgram(programId);
-
-        glUniform1i(accumulationSamplerUni.ID, accumulationSamplerUni.value);
-        glUniform1i(renderSamplerUni.ID, renderSamplerUni.value);
-        glUniform1f(drawEnvironmentUni.ID, (float)drawEnvironmentUni.value);
-        glUniform1ui(maxBouncesUni.ID, maxBouncesUni.value);
-        glUniform1ui(maxFramesUni.ID, maxFramesUni.value);
-        glUniform1ui(frameIndexUni.ID, frameIndexUni.value);
-        glUniform2f(resolutionUni.ID, (float)resolutionUni.value.x, (float)resolutionUni.value.y);
-
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, cameraStorage);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Camera::Spec), &camera.GetSpec(), GL_DYNAMIC_DRAW);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, cameraStorage);
-        
-        glUniform1i(materialsCountUni.ID, scene.materials.size());
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialsStorage);
-        glBufferData(
-            GL_SHADER_STORAGE_BUFFER,
-            sizeof(Material) * scene.materials.size(),
-            scene.materials.data(),
-            GL_DYNAMIC_DRAW
-        );
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialsStorage);
-        
-        glUniform1i(spheresCountUni.ID, scene.spheres.size());
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, spheresStorage);
-        glBufferData(GL_SHADER_STORAGE_BUFFER,
-            sizeof(Sphere) * scene.spheres.size(),
-            scene.spheres.data(),
-            GL_DYNAMIC_DRAW
-        );
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, spheresStorage);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
         glBindBuffer(GL_ARRAY_BUFFER, screenBufferId);
 
         glActiveTexture(GL_TEXTURE0);
@@ -152,6 +80,8 @@ namespace RT
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        openGlShader.unuse();
     }
 
     void OpenGlRenderer::clear()
@@ -212,28 +142,6 @@ namespace RT
             return;
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-
-    void OpenGlRenderer::compileShader(uint32_t shaderID, const std::string& source) const
-    {
-        const char* sourceData = source.c_str();
-        int32_t sourceLenght = source.length();
-        glShaderSource(shaderID, 1,
-            &sourceData,
-            &sourceLenght
-        );
-        glCompileShader(shaderID);
-
-        int32_t status;
-        glGetShaderiv(shaderID, GL_COMPILE_STATUS, &status);
-        if (status == GL_FALSE)
-        {
-            int32_t lenght;
-            glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &lenght);
-            std::vector<char> message(lenght);
-            glGetShaderInfoLog(shaderID, lenght, &lenght, message.data());
-            std::cout << "SHADER ERROR:\n" << message.data() << std::endl;
-        }
     }
 
     void OpenGlRenderer::loadOpenGlForGlfw()

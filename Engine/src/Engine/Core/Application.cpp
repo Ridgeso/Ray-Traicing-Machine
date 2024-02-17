@@ -32,6 +32,7 @@ namespace RT
 		viewportSize(),
 		mainWindow(createWindow()),
 		renderer(createRenderer()),
+		rtShader(createShader()),
 		camera(45.0f, 0.01f, 100.0f)
 	{
 		MainApp = this;
@@ -43,6 +44,7 @@ namespace RT
 		glm::ivec2 windowSize = mainWindow->getSize();
 		RenderSpecs renderSpecs = { windowSize.x, windowSize.y, false };
 		renderer->init(renderSpecs);
+		rtShader->load("..\\Engine\\assets\\shaders\\RayTracing.shader");
 
 		scene.materials.emplace_back(Material{ { 0.0f, 0.0f, 0.0f }, 0.0, { 0.0f, 0.0f, 0.0f }, 0.0f,  0.0f, 0.0f, 1.0f });
 		scene.materials.emplace_back(Material{ { 1.0f, 1.0f, 1.0f }, 0.0, { 1.0f, 1.0f, 1.0f }, 0.7f,  0.8f, 0.0f, 1.5f });
@@ -79,6 +81,7 @@ namespace RT
 	{
 		mainWindow->shutDown();
 		renderer->shutDown();
+		rtShader->destroy();
 	}
 
 	void Application::run()
@@ -187,7 +190,7 @@ namespace RT
 
 		Timer timeit;
 		camera.ResizeCamera((int32_t)viewportSize.x, (int32_t)viewportSize.y);
-		renderer->render(camera, scene);
+		renderer->render(camera, *rtShader, scene);
 		lastFrameDuration = timeit.Ellapsed();
 	}
 

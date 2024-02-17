@@ -1,12 +1,12 @@
 #include "Renderer.h"
-#include "External/render/OpenGl/OpenGlRenderer.h"
+#include "External/Render/OpenGl/OpenGlRenderer.h"
 
 namespace RT
 {
 
 	Local<Renderer> createRenderer()
 	{
-		return makeLocal<OpenGlRenderer>();
+		return makeLocal<OpenGl::OpenGlRenderer>();
 	}
 
 }

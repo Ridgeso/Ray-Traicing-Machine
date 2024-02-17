@@ -9,7 +9,7 @@
 namespace RT::OpenGl
 {
 
-	void OpenGlShader::use() const
+    void OpenGlShader::use() const
 	{
 		glUseProgram(programId);
 	}
@@ -22,7 +22,12 @@ namespace RT::OpenGl
     void OpenGlShader::destroy()
     {
         glDeleteProgram(programId);
+        for (const auto& storId : storages)
+        {
+            glDeleteBuffers(1, &storId.second);
+        }
         uniforms.clear();
+        storages.clear();
     }
 
 	void OpenGlShader::load(const std::string& shaderPath)
@@ -54,43 +59,42 @@ namespace RT::OpenGl
         loadUniforms();
 	}
 
-    void OpenGlShader::setInt(const std::string uniName, const int32_t value) const
+    void OpenGlShader::setUniformImpl(const std::string& uniName, const int32_t size, const void* value) const
     {
-        auto pos = uniforms.find(uniName);
-        if (pos != uniforms.end())
-            glUniform1i(pos->second, value);
+        const auto& pos = uniforms.find(uniName);
+        if (pos == uniforms.end())
+        {
+            return;
+        }
+
+        if (size == 1)
+        {
+            switch (pos->second.type)
+            {
+                case Uniform::Type::Int: glUniform1i(pos->second.id, *(int32_t*)value); break;
+                case Uniform::Type::Uint: glUniform1ui(pos->second.id, *(uint32_t*)value); break;
+                case Uniform::Type::Float: glUniform1f(pos->second.id, *(float*)value); break;
+                case Uniform::Type::Float2: glUniform2f(pos->second.id, ((glm::vec2*)value)->x, ((glm::vec2*)value)->y); break;
+            }
+        }
+        else
+        {
+            switch (pos->second.type)
+            {
+                case Uniform::Type::Buffer: setStorage(pos->second.id, size, value); break;
+            }
+        }
     }
 
-    void OpenGlShader::setUint(const std::string uniName, const uint32_t value) const
+    void OpenGlShader::setStorage(const int32_t pos, const size_t size, const void* data) const
     {
-        auto pos = uniforms.find(uniName);
-        if (pos != uniforms.end())
-            glUniform1ui(pos->second, value);
-    }
-
-    void OpenGlShader::setFloat(const std::string uniName, const float value) const
-    {
-        auto pos = uniforms.find(uniName);
-        if (pos != uniforms.end())
-            glUniform1f(pos->second, value);
-    }
-
-    void OpenGlShader::setFloat2(const std::string uniName, const glm::vec2 value) const
-    {
-        auto pos = uniforms.find(uniName);
-        if (pos != uniforms.end())
-            glUniform2f(pos->second, value.x, value.y);
-    }
-
-    void OpenGlShader::setStorage(const uint32_t storageId, const int32_t pos, const size_t size, const void* data) const
-    {
+        const auto storageId = storages.at(pos);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, storageId);
         glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, GL_DYNAMIC_DRAW);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, pos, storageId);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
 
-    std::unordered_map<OpenGlShader::ShaderType, std::stringstream> OpenGlShader::readSources(const std::string& shaderPath) const
+    std::unordered_map<OpenGlShader::Type, std::stringstream> OpenGlShader::readSources(const std::string& shaderPath) const
     {
         std::ifstream shaders(shaderPath, std::ios::in);
         if (!shaders.is_open())
@@ -98,16 +102,16 @@ namespace RT::OpenGl
             return {};
         }
 
-        auto emptyShaders = std::unordered_map<ShaderType, std::stringstream>();
-        emptyShaders[ShaderType::Vertex] << "";
-        emptyShaders[ShaderType::TessEvaulation] << "";
-        emptyShaders[ShaderType::TessControl] << "";
-        emptyShaders[ShaderType::Geometry] << "";
-        emptyShaders[ShaderType::Fragment] << "";
-        emptyShaders[ShaderType::Compute] << "";
-        auto shadersSource = std::unordered_map<ShaderType, std::stringstream>();
+        auto emptyShaders = std::unordered_map<Type, std::stringstream>();
+        emptyShaders[Type::Vertex] << "";
+        emptyShaders[Type::TessEvaulation] << "";
+        emptyShaders[Type::TessControl] << "";
+        emptyShaders[Type::Geometry] << "";
+        emptyShaders[Type::Fragment] << "";
+        emptyShaders[Type::Compute] << "";
+        auto shadersSource = std::unordered_map<Type, std::stringstream>();
         
-        auto shaderType = ShaderType::None;
+        auto shaderType = Type::None;
         auto line = std::string();
         while (std::getline(shaders, line))
         {
@@ -118,13 +122,14 @@ namespace RT::OpenGl
 
             if (line.find("###SHADER") != std::string::npos)
             {
-                shaderType = line.find("VERTEX") != std::string::npos ?   ShaderType::Vertex
-                    : line.find("TESS_CONTROL") != std::string::npos ?    ShaderType::TessControl
-                    : line.find("TESS_EVAULATION") != std::string::npos ? ShaderType::TessEvaulation
-                    : line.find("GEOMETRY") != std::string::npos ?        ShaderType::Geometry
-                    : line.find("FRAGMENT") != std::string::npos ?        ShaderType::Fragment
-                    : line.find("FRAGMENT") != std::string::npos ?        ShaderType::Compute
-                    :                                                     ShaderType::None;
+                shaderType =
+                      line.find("VERTEX") != std::string::npos          ? Type::Vertex
+                    : line.find("TESS_CONTROL") != std::string::npos    ? Type::TessControl
+                    : line.find("TESS_EVAULATION") != std::string::npos ? Type::TessEvaulation
+                    : line.find("GEOMETRY") != std::string::npos        ? Type::Geometry
+                    : line.find("FRAGMENT") != std::string::npos        ? Type::Fragment
+                    : line.find("FRAGMENT") != std::string::npos        ? Type::Compute
+                    :                                                     Type::None;
 
                 if (emptyShaders.find(shaderType) != emptyShaders.end())
                 {
@@ -132,7 +137,7 @@ namespace RT::OpenGl
                     emptyShaders.erase(shaderType);
                 }
             }
-            else if (shaderType != ShaderType::None)
+            else if (shaderType != Type::None)
             {
                 shadersSource[shaderType] << line << '\n';
             }
@@ -141,7 +146,7 @@ namespace RT::OpenGl
         return shadersSource;
     }
 
-    uint32_t OpenGlShader::compile(const ShaderType type, const std::string& source) const
+    uint32_t OpenGlShader::compile(const Type type, const std::string& source) const
     {
         const auto glShaderType = shaderType2GlType(type);
         auto shaderId = static_cast<uint32_t>(glCreateShader(glShaderType));
@@ -160,15 +165,28 @@ namespace RT::OpenGl
         char name[bufSize];
         int32_t count, size, length;
         uint32_t type;
+
         glGetProgramiv(programId, GL_ACTIVE_UNIFORMS, &count);
         for (auto i = 0u; i < count; i++)
         {
             glGetActiveUniform(programId, i, bufSize, &length, &size, &type, name);
-            uniforms[std::string(name)] = glGetUniformLocation(programId, name);
+            uniforms[std::string(name)] = { glUniType2UniType(type), glGetUniformLocation(programId, name)};
+        }
+
+        glGetProgramInterfaceiv(programId, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES, &count);
+        for (int i = 0; i < count; ++i) {
+            constexpr uint32_t props[] = { GL_BUFFER_BINDING };
+            constexpr uint32_t propsSize = sizeof(props) / sizeof(uint32_t);
+            int32_t values[propsSize];
+
+            glGetProgramResourceiv(programId, GL_SHADER_STORAGE_BLOCK, i, propsSize, props, propsSize, &length, values);
+            glGetProgramResourceName(programId, GL_SHADER_STORAGE_BLOCK, i, bufSize, &length, name);
+            uniforms[std::string(name)] = { Uniform::Type::Buffer, values[0]};
+            glGenBuffers(1, &storages[values[0]]);
         }
     }
 
-    void OpenGlShader::logLinkError(const std::string shaderPath) const
+    void OpenGlShader::logLinkError(const std::string& shaderPath) const
     {
         int32_t isLinked;
         glGetProgramiv(programId, GL_LINK_STATUS, &isLinked);
@@ -185,18 +203,31 @@ namespace RT::OpenGl
         }
     }
 
-    constexpr uint32_t OpenGlShader::shaderType2GlType(const ShaderType type)
+    constexpr uint32_t OpenGlShader::shaderType2GlType(const Type type)
     {
         switch (type)
         {
-            case ShaderType::Vertex:         return GL_VERTEX_SHADER;
-            case ShaderType::TessEvaulation: return GL_TESS_EVALUATION_SHADER;
-            case ShaderType::TessControl:    return GL_TESS_CONTROL_SHADER;
-            case ShaderType::Geometry:       return GL_GEOMETRY_SHADER;
-            case ShaderType::Fragment:       return GL_FRAGMENT_SHADER;
-            case ShaderType::Compute:        return GL_COMPUTE_SHADER;
-            default:                         return 0u;
+            case Type::Vertex:         return GL_VERTEX_SHADER;
+            case Type::TessEvaulation: return GL_TESS_EVALUATION_SHADER;
+            case Type::TessControl:    return GL_TESS_CONTROL_SHADER;
+            case Type::Geometry:       return GL_GEOMETRY_SHADER;
+            case Type::Fragment:       return GL_FRAGMENT_SHADER;
+            case Type::Compute:        return GL_COMPUTE_SHADER;
         }
+        return 0u;
+    }
+
+    constexpr Uniform::Type OpenGlShader::glUniType2UniType(const uint32_t glUniType)
+    {
+        switch (glUniType)
+        {
+            case GL_SAMPLER_2D:   return Uniform::Type::Int;
+            case GL_INT:          return Uniform::Type::Int;
+            case GL_UNSIGNED_INT: return Uniform::Type::Uint;
+            case GL_FLOAT:        return Uniform::Type::Float;
+            case GL_FLOAT_VEC2:   return Uniform::Type::Float2;
+        }
+        return Uniform::Type::None;
     }
 
 }

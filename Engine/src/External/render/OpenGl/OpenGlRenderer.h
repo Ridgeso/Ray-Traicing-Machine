@@ -5,8 +5,9 @@
 #include <glm/glm.hpp>
 
 #include "Engine/Render/Renderer.h"
+#include "OpenGlShader.h"
 
-namespace RT
+namespace RT::OpenGl
 {
 
 	class OpenGlRenderer : public Renderer
@@ -19,7 +20,7 @@ namespace RT
 		void shutDown() override;
 
 		bool recreateRenderer(const glm::ivec2 size) override;
-		void render(const Camera& camera, const Scene& scene) override;
+		void render(const Camera& camera, const Shader& shader, const Scene& scene) override;
 
 		void resetFrame() override { frameIndexUni.value = 0; }
 		uint32_t getFrames() const override { return frameIndexUni.value; }
@@ -35,7 +36,6 @@ namespace RT
 		template <typename Data = void>
 		struct UniformBase
 		{
-			uint32_t ID;
 			const std::string name;
 		};
 
@@ -51,25 +51,27 @@ namespace RT
 	private:
 		void clear();
 		void resize(const glm::ivec2 size);
-		void compileShader(uint32_t shaderID, const std::string& source) const;
 		static void loadOpenGlForGlfw();
 
 	private:
 		bool accumulation;
 
-		Uniform<const int32_t> accumulationSamplerUni = { 0, "AccumulationTexture", 0 };
-		Uniform<const int32_t> renderSamplerUni = { 0, "RenderTexture", 1 };
-		Uniform<bool> drawEnvironmentUni = { 0, "DrawEnvironment", false };
-		Uniform<uint32_t> maxBouncesUni = { 0, "MaxBounces", 5 };
-		Uniform<uint32_t> maxFramesUni = { 0, "MaxFrames", 1 };
-		Uniform<int32_t> frameIndexUni = { 0, "FrameIndex", 0 };
-		Uniform<glm::ivec2> resolutionUni = { 0, "Resolution", glm::ivec2(0) };
-		Uniform<> materialsCountUni = { 0, "MaterialsCount" };
-		Uniform<> spheresCountUni = { 0, "SpheresCount" };
+		Uniform<const int32_t> accumulationSamplerUni = { "AccumulationTexture", 0 };
+		Uniform<const int32_t> renderSamplerUni = { "RenderTexture", 1 };
+		Uniform<bool> drawEnvironmentUni = { "DrawEnvironment", false };
+		Uniform<uint32_t> maxBouncesUni = { "MaxBounces", 5 };
+		Uniform<uint32_t> maxFramesUni = { "MaxFrames", 1 };
+		Uniform<int32_t> frameIndexUni = { "FrameIndex", 0 };
+		Uniform<glm::ivec2> resolutionUni = { "Resolution", glm::ivec2(0) };
+		Uniform<> materialsCountUni = { "MaterialsCount" };
+		Uniform<> spheresCountUni = { "SpheresCount" };
+		Uniform<uint32_t> cameraStorage = { "CameraBuffer", 0 };
+		Uniform<uint32_t> materialsStorage = { "MaterialsBuffer", 0 };
+		Uniform<uint32_t> spheresStorage = { "SpheresBuffer", 0 };
 
+		OpenGlShader rtShader;
 		uint32_t accumulationId = 0, renderId = 0;
-		uint32_t screenBufferId = 0, frameBufferId = 0, renderBufferId = 0, programId = 0;
-		uint32_t cameraStorage = 0, materialsStorage = 0, spheresStorage= 0;
+		uint32_t screenBufferId = 0, frameBufferId = 0, renderBufferId = 0;
 
 		struct Vertices
 		{

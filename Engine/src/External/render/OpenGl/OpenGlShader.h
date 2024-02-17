@@ -10,10 +10,27 @@
 namespace RT::OpenGl
 {
 
+	struct Uniform
+	{
+		enum Type
+		{
+			None,
+			Int, Int2, Int3, Int4, IntV,
+			Uint, Uint2, Uint3, Uint4, UintV,
+			Float, Float2, Float3, Float4, FloatV,
+			Double, Double2, Double3, Double4, DoubleV,
+			Mat2x2, Mat3x3, Mat4x4,
+			Buffer
+		};
+
+		Type type;
+		int32_t id;
+	};
+
 	class OpenGlShader : public Shader
 	{
 	public:
-		enum ShaderType
+		enum Type
 		{
 			None,
 			Vertex,
@@ -31,29 +48,26 @@ namespace RT::OpenGl
 		void use() const override;
 		void unuse() const override;
 		void destroy() override;
-
-		void load(const std::string& shaderPath) override;
-
-		void setInt(const std::string uniName, const int32_t value) const override;
-		void setUint(const std::string uniName, const uint32_t value) const override;
-		void setFloat(const std::string uniName, const float value) const override;
-		void setFloat2(const std::string uniName, const glm::vec2 value) const override;
-		
-		void setStorage(const uint32_t storageId, const int32_t pos, const size_t size, const void* data) const override;
-
 		const uint32_t getId() const override { return programId; }
 
-	private:
-		std::unordered_map<ShaderType, std::stringstream> readSources(const std::string& shaderPath) const;
-		uint32_t compile(const ShaderType type, const std::string& source) const;
-		void loadUniforms();
-		void logLinkError(const std::string shaderPath) const;
+		void load(const std::string& shaderPath) override;
+		
+		void setUniformImpl(const std::string& uniName, const int32_t size, const void* value) const override;
 
-		static constexpr uint32_t shaderType2GlType(const ShaderType type);
+	private:
+		void setStorage(const int32_t pos, const size_t size, const void* data) const;
+		std::unordered_map<Type, std::stringstream> readSources(const std::string& shaderPath) const;
+		uint32_t compile(const Type type, const std::string& source) const;
+		void loadUniforms();
+		void logLinkError(const std::string& shaderPath) const;
+
+		static constexpr uint32_t shaderType2GlType(const Type type);
+		static constexpr Uniform::Type glUniType2UniType(const uint32_t glUniType);
 
 	private:
 		uint32_t programId;
-		std::unordered_map<std::string, uint32_t> uniforms;
+		std::unordered_map<std::string, Uniform> uniforms;
+		std::unordered_map<int32_t, uint32_t> storages;
 	};
 
 }

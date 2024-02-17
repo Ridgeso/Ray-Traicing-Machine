@@ -5,6 +5,7 @@
 
 #include "Engine/Render/Camera.h"
 #include "Engine/Render/Scene.h"
+#include "Engine/Render/Shader.h"
 
 namespace RT
 {
@@ -21,7 +22,7 @@ namespace RT
 		virtual void shutDown() = 0;
 
 		virtual bool recreateRenderer(const glm::ivec2 size) = 0;
-		virtual void render(const Camera& camera, const Scene& scene) = 0;
+		virtual void render(const Camera& camera, const Shader& shader, const Scene& scene) = 0;
 
 		virtual void resetFrame() = 0;
 		virtual uint32_t getFrames() const = 0;

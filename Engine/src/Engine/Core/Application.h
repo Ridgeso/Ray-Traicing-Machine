@@ -6,6 +6,7 @@
 
 #include "Engine/Window/Window.h"
 #include "Engine/Render/Renderer.h"
+#include "Engine/Render/Shader.h"
 
 namespace RT
 {
@@ -43,6 +44,7 @@ namespace RT
 		ImVec2 viewportSize;
 		Local<Window> mainWindow;
 		Local<Renderer> renderer;
+		Local<Shader> rtShader;
 		Camera camera;
 		Scene scene;
 

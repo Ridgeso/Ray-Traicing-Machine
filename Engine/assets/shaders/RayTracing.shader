@@ -1,4 +1,4 @@
-###SHADER(VERTEX)
+###SHADER VERTEX
 #version 430 core
 layout (location = 0) in vec2 aPos;
 layout (location = 1) in vec2 aTexCoords;
@@ -11,7 +11,7 @@ void main()
     TexCoords = aTexCoords;
 }
 
-###SHADER(FRAGMENT)
+###SHADER FRAGMENT
 #version 430 core
 #define LOWETS_THRESHOLD 1.0e-6F
 #define FLT_MAX 3.402823466e+38F
@@ -32,12 +32,12 @@ uniform uint MaxFrames;
 uniform uint FrameIndex;
 uniform vec2 Resolution;
 
-layout(std430, binding = 0) buffer Camera
+layout(std430, binding = 0) buffer CameraBuffer
 {
-    mat4 Projection;
-    mat4 View;
-    vec3 Position;
-} b_Camera;
+    mat4 projection;
+    mat4 view;
+    vec3 position;
+} Camera;
 
 struct Material
 {
@@ -52,7 +52,7 @@ struct Material
 uniform int MaterialsCount;
 layout(std430, binding = 1) buffer MaterialsBuffer
 {
-    Material b_Materials[];
+    Material Materials[];
 };
 
 struct
@@ -60,9 +60,9 @@ struct
     uint seed;
 } Global;
 
-vec3 GetEmmision(in int matIndex)
+vec3 getEmmision(in int matIndex)
 {
-    return b_Materials[matIndex].EmmisionColor * b_Materials[matIndex].EmmisionPower;
+    return Materials[matIndex].EmmisionColor * Materials[matIndex].EmmisionPower;
 }
 
 struct Sphere
@@ -75,7 +75,7 @@ struct Sphere
 uniform int SpheresCount;
 layout(std430, binding = 2) buffer SpheresBuffer
 {
-    Sphere b_Spheres[];
+    Sphere Spheres[];
 };
 
 uint PCGhash(in uint input)
@@ -85,15 +85,15 @@ uint PCGhash(in uint input)
     return (word >> 22u) ^ word;
 }
 
-float FastRandom(inout uint seed)
+float fastRandom(inout uint seed)
 {
     seed = PCGhash(seed);
     return float(seed) / UINT_MAX;
 }
 
-vec3 RandomUnitSpehere(inout uint seed)
+vec3 randomUnitSpehere(inout uint seed)
 {
-    return 2.0 * vec3(FastRandom(seed), FastRandom(seed), FastRandom(seed)) - 1.0;
+    return 2.0 * vec3(fastRandom(seed), fastRandom(seed), fastRandom(seed)) - 1.0;
 }
 
 struct Ray
@@ -122,7 +122,7 @@ const vec3 GroundColor = vec3(0.3);
 const vec3 SkyColorZenith = vec3(0.5, 0.7, 1.0);
 const vec3 SkyColorHorizon = vec3(0.6, 0.4, 0.4);
 
-Payload Miss(in Ray ray)
+Payload miss(in Ray ray)
 {
     //vec3 skyColor = vec3((1.0 - ray.Direction.yy) / 4.0 + 0.6, 1.0);
     float skyLerp = pow(smoothstep(0.0, 0.4, ray.Direction.y), 0.35);
@@ -141,30 +141,30 @@ Payload Miss(in Ray ray)
     return payload;
 }
 
-Payload ClosestHit(in Ray ray, in float closestDistance, in int closestObject)
+Payload closestHit(in Ray ray, in float closestDistance, in int closestObject)
 {   
     Payload payload;
-    payload.Color = b_Materials[b_Spheres[closestObject].MaterialId].Albedo;
+    payload.Color = Materials[Spheres[closestObject].MaterialId].Albedo;
     payload.HitPosition = ray.Origin + closestDistance * ray.Direction;
-    payload.HitNormal = normalize(payload.HitPosition - b_Spheres[closestObject].Position);
+    payload.HitNormal = normalize(payload.HitPosition - Spheres[closestObject].Position);
     payload.HitDistance = closestDistance;
     payload.HitObject = closestObject;
         
     return payload;
 }
 
-Payload TraceRay(in Ray ray)
+Payload traceRay(in Ray ray)
 {
     float closestDistance = FLT_MAX;
     int closestObject = -1;
     
     for (int sphereId = 0; sphereId < SpheresCount; sphereId++)
     {
-        vec3 origin = ray.Origin - b_Spheres[sphereId].Position;
+        vec3 origin = ray.Origin - Spheres[sphereId].Position;
         
         float a = dot(ray.Direction, ray.Direction);
         float b = 2.0 * dot(origin, ray.Direction);
-        float c = dot(origin, origin) - pow(b_Spheres[sphereId].Radius, 2.0);
+        float c = dot(origin, origin) - pow(Spheres[sphereId].Radius, 2.0);
     
         float delta = b * b - 4.0 * a * c;
     
@@ -173,28 +173,28 @@ Payload TraceRay(in Ray ray)
         
         float sqrtDelta = sqrt(delta);
         
-        float closest_t = (-b - sqrtDelta) / (2.0 * a);
-        if (closest_t >= 0.0 && closest_t < closestDistance)
+        float closestT = (-b - sqrtDelta) / (2.0 * a);
+        if (closestT >= 0.0 && closestT < closestDistance)
         {
-            closestDistance = closest_t;
+            closestDistance = closestT;
             closestObject = sphereId;
             continue;
         }
     }
     
     if (closestObject == -1)
-        return Miss(ray);
+        return miss(ray);
     
-    return ClosestHit(ray, closestDistance, closestObject);
+    return closestHit(ray, closestDistance, closestObject);
 }
 
-void AccumulateColor(inout Pixel pixel, in int HitObject)
+void accumulateColor(inout Pixel pixel, in int HitObject)
 {
-    pixel.Color += GetEmmision(b_Spheres[HitObject].MaterialId) * pixel.Contribution;
-    pixel.Contribution *= b_Materials[b_Spheres[HitObject].MaterialId].Albedo;
+    pixel.Color += getEmmision(Spheres[HitObject].MaterialId) * pixel.Contribution;
+    pixel.Contribution *= Materials[Spheres[HitObject].MaterialId].Albedo;
 }
 
-bool Reflectance(in vec3 direction, in vec3 surfaceNormal, in float refIdx)
+bool reflectance(in vec3 direction, in vec3 surfaceNormal, in float refIdx)
 {
     float cosTheta = min(dot(-direction, surfaceNormal), 1.0);
     float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
@@ -205,18 +205,18 @@ bool Reflectance(in vec3 direction, in vec3 surfaceNormal, in float refIdx)
     r0 = r0 * r0;
     float r0p = r0 + (1.0 - r0) * pow(1 - cosTheta, 5);
     
-    bool refractChance = r0p > FastRandom(Global.seed);
+    bool refractChance = r0p > fastRandom(Global.seed);
     
     return cannotRefract || refractChance;
 }
 
-void RefractRay(inout Ray ray, in Payload payload)
+void refractRay(inout Ray ray, in Payload payload)
 {
     float refractionRatio = dot(ray.Direction, payload.HitNormal) < 0.0 ?
-        1.0 / b_Materials[b_Spheres[payload.HitObject].MaterialId].RefractionRatio :
-        b_Materials[b_Spheres[payload.HitObject].MaterialId].RefractionRatio;
+        1.0 / Materials[Spheres[payload.HitObject].MaterialId].RefractionRatio :
+        Materials[Spheres[payload.HitObject].MaterialId].RefractionRatio;
     
-    if (Reflectance(ray.Direction, payload.HitNormal, refractionRatio))
+    if (reflectance(ray.Direction, payload.HitNormal, refractionRatio))
     {
         ray.Origin = payload.HitPosition + payload.HitNormal * 0.0001;
         ray.Direction = reflect(ray.Direction, payload.HitNormal);
@@ -228,35 +228,35 @@ void RefractRay(inout Ray ray, in Payload payload)
     }
 }
 
-void ReflectRay(inout Ray ray, in Payload payload)
+void reflectRay(inout Ray ray, in Payload payload)
 {
     ray.Origin = payload.HitPosition + payload.HitNormal * 0.0001;
     
-    vec3 diffuseDir = normalize(payload.HitNormal + RandomUnitSpehere(Global.seed));
+    vec3 diffuseDir = normalize(payload.HitNormal + randomUnitSpehere(Global.seed));
     vec3 specularDir = reflect(ray.Direction, payload.HitNormal);
-    ray.Direction = mix(diffuseDir, specularDir, b_Materials[b_Spheres[payload.HitObject].MaterialId].Roughness);
+    ray.Direction = mix(diffuseDir, specularDir, Materials[Spheres[payload.HitObject].MaterialId].Roughness);
 }
 
-void Scatter(inout Ray ray, in Payload payload)
+void scatter(inout Ray ray, in Payload payload)
 {   
-    if (b_Materials[b_Spheres[payload.HitObject].MaterialId].RefractionRatio > 1.0)
+    if (Materials[Spheres[payload.HitObject].MaterialId].RefractionRatio > 1.0)
     {
-        RefractRay(ray, payload);
+        refractRay(ray, payload);
     }
     else
     {
-        ReflectRay(ray, payload);
+        reflectRay(ray, payload);
     }        
 }
 
 void main()
 {
     vec2 pixelCoord = gl_FragCoord.xy / Resolution;
-    vec4 coord = b_Camera.Projection * (2.0 * vec4(pixelCoord, 1.0, 1.0) - 1.0);
+    vec4 coord = Camera.projection * (2.0 * vec4(pixelCoord, 1.0, 1.0) - 1.0);
     
     Ray precalculatedRay;
-    precalculatedRay.Origin = b_Camera.Position;
-    precalculatedRay.Direction = vec3(b_Camera.View * vec4(normalize(coord.xyz / coord.w), 0));
+    precalculatedRay.Origin = Camera.position;
+    precalculatedRay.Direction = vec3(Camera.view * vec4(normalize(coord.xyz / coord.w), 0));
  
     Pixel pixel;
     pixel.Color = vec3(0);
@@ -273,7 +273,7 @@ void main()
         {
             Global.seed += i;
         
-            Payload payload = TraceRay(ray);
+            Payload payload = traceRay(ray);
         
             if (payload.HitObject == -1)
             {
@@ -281,9 +281,9 @@ void main()
                 break;
             }
             
-            AccumulateColor(pixel, payload.HitObject);
+            accumulateColor(pixel, payload.HitObject);
             
-            Scatter(ray, payload);
+            scatter(ray, payload);
         }
     }
     

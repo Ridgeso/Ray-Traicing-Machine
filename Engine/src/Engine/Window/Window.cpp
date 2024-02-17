@@ -1,5 +1,5 @@
 #include "Window.h"
-#include "External/window/GlfwWindow/GlfwWindow.h"
+#include "External/Window/GlfwWindow/GlfwWindow.h"
 
 namespace RT
 {
