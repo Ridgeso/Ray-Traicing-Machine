@@ -19,17 +19,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Engine\Render\Shader.cpp" />
+    <ClCompile Include="src\External\Render\OpenGl\OpenGlShader.cpp" />
     <ClCompile Include="src\Engine\Core\Application.cpp" />
     <ClCompile Include="src\Engine\Render\Renderer.cpp" />
     <ClCompile Include="src\Engine\Window\Window.cpp" />
     <ClCompile Include="src\Engine\Render\Camera.cpp" />
-    <ClCompile Include="src\External\render\impl\gladImpl.cpp" />
-    <ClCompile Include="src\External\render\OpenGl\OpenGlRenderer.cpp" />
+    <ClCompile Include="src\External\Render\impl\gladImpl.cpp" />
+    <ClCompile Include="src\External\Render\OpenGl\OpenGlRenderer.cpp" />
     <ClCompile Include="src\Engine\Render\Scene.cpp" />
-    <ClCompile Include="src\External\window\ImGuiBuild.cpp" />
-    <ClCompile Include="src\External\window\GlfwWindow\GlfwWindow.cpp" />
+    <ClCompile Include="src\External\Window\ImGuiBuild.cpp" />
+    <ClCompile Include="src\External\Window\GlfwWindow\GlfwWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Engine\Render\Shader.h" />
+    <ClInclude Include="src\External\Render\OpenGl\OpenGlShader.h" />
     <ClInclude Include="src\Engine\Core\Application.h" />
     <ClInclude Include="src\Engine\Core\Base.h" />
     <ClInclude Include="src\Engine\Core\EntryPoint.h" />
@@ -38,10 +42,10 @@
     <ClInclude Include="src\Engine\Render\Renderer.h" />
     <ClInclude Include="src\Engine\Window\Window.h" />
     <ClInclude Include="src\Engine\Render\Camera.h" />
-    <ClInclude Include="src\External\render\OpenGl\OpenGlRenderer.h" />
+    <ClInclude Include="src\External\Render\OpenGl\OpenGlRenderer.h" />
     <ClInclude Include="src\Engine\Render\Scene.h" />
-    <ClInclude Include="src\External\window\GlfwWindow\GlfwWindow.fwd.h" />
-    <ClInclude Include="src\External\window\GlfwWindow\GlfwWindow.h" />
+    <ClInclude Include="src\External\Window\GlfwWindow\GlfwWindow.fwd.h" />
+    <ClInclude Include="src\External\Window\GlfwWindow\GlfwWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\RayTracing.shader" />

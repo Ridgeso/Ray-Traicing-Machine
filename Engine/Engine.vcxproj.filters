@@ -18,28 +18,34 @@
     <ClCompile Include="src\Engine\Core\Application.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\External\render\impl\gladImpl.cpp">
+    <ClCompile Include="src\External\Render\impl\gladImpl.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="src\Engine\Render\Camera.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\External\render\OpenGl\OpenGlRenderer.cpp">
+    <ClCompile Include="src\External\Render\OpenGl\OpenGlRenderer.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="src\Engine\Render\Scene.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\External\window\ImGuiBuild.cpp">
+    <ClCompile Include="src\External\Window\ImGuiBuild.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\External\window\GlfwWindow\GlfwWindow.cpp">
+    <ClCompile Include="src\External\Window\GlfwWindow\GlfwWindow.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="src\Engine\Window\Window.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="src\Engine\Render\Renderer.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\External\Render\OpenGl\OpenGlShader.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Render\Shader.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,25 +65,31 @@
     <ClInclude Include="src\Engine\Render\Camera.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="src\External\render\OpenGl\OpenGlRenderer.h">
+    <ClInclude Include="src\External\Render\OpenGl\OpenGlRenderer.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine\Render\Scene.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="src\External\window\GlfwWindow\GlfwWindow.h">
+    <ClInclude Include="src\External\Window\GlfwWindow\GlfwWindow.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine\Window\Window.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="src\External\window\GlfwWindow\GlfwWindow.fwd.h">
+    <ClInclude Include="src\External\Window\GlfwWindow\GlfwWindow.fwd.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine\Core\Base.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
     <ClInclude Include="src\Engine\Render\Renderer.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="src\External\Render\OpenGl\OpenGlShader.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Render\Shader.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
   </ItemGroup>
