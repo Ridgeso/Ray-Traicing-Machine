@@ -75,16 +75,11 @@ namespace RT
 
     void OpenGlRenderer::shutDown()
     {
+        clear();
         glDeleteBuffers(1, &cameraStorage);
         glDeleteBuffers(1, &materialsStorage);
         glDeleteBuffers(1, &spheresStorage);
-
-        glDeleteTextures(1, &accumulationId);
-        glDeleteTextures(1, &renderId);
         glDeleteProgram(programId);
-        glDeleteBuffers(1, &screenBufferId);
-        glDeleteRenderbuffers(1, &renderBufferId);
-        glDeleteFramebuffers(1, &frameBufferId);
     }
 
     bool OpenGlRenderer::recreateRenderer(const glm::ivec2 size)
@@ -93,9 +88,7 @@ namespace RT
             return true;
         
         resetFrame();
-        shutDown();
         resize(size);
-        
         return false;
     }
 
@@ -161,8 +154,18 @@ namespace RT
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
+    void OpenGlRenderer::clear()
+    {
+        glDeleteTextures(1, &accumulationId);
+        glDeleteTextures(1, &renderId);
+        glDeleteBuffers(1, &screenBufferId);
+        glDeleteRenderbuffers(1, &renderBufferId);
+        glDeleteFramebuffers(1, &frameBufferId);
+    }
+
     void OpenGlRenderer::resize(const glm::ivec2 size)
     {
+        clear();
         resolutionUni.value = size;
         glViewport(0, 0, size.x, size.y);
 

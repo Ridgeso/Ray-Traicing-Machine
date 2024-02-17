@@ -49,6 +49,7 @@ namespace RT
 		struct Uniform<void> : UniformBase<> { };
 
 	private:
+		void clear();
 		void resize(const glm::ivec2 size);
 		void compileShader(uint32_t shaderID, const std::string& source) const;
 		static void loadOpenGlForGlfw();
