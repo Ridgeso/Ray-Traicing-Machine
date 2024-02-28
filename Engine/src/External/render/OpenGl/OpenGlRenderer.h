@@ -8,6 +8,7 @@
 #include "Engine/Render/Renderer.h"
 #include "OpenGlShader.h"
 #include "OpenGlTexture.h"
+#include "OpenGlBuffer.h"
 
 namespace RT::OpenGl
 {
@@ -72,13 +73,14 @@ namespace RT::OpenGl
 		Uniform<uint32_t> spheresStorage = { "SpheresBuffer", 0 };
 
 		Local<OpenGlTexture> accumulationTex, renderTex;
-		uint32_t screenBufferId = 0, frameBufferId = 0, renderBufferId = 0;
+		Local<OpenGlVertexBuffer> screenBuff;
+		uint32_t frameBufferId = 0, renderBufferId = 0;
 
 		struct Vertices
 		{
 			float Coords[2];
 			float TexCoords[2];
-		} static constexpr s_Screen[] = {
+		} static constexpr screenVertices[] = {
 			{ { -1.0f, -1.0f }, { 0.0f, 0.0f } },
 			{ {  1.0f, -1.0f }, { 1.0f, 0.0f } },
 			{ {  1.0f,  1.0f }, { 1.0f, 1.0f } },
@@ -86,6 +88,7 @@ namespace RT::OpenGl
 			{ { -1.0f,  1.0f }, { 0.0f, 1.0f } },
 			{ { -1.0f, -1.0f }, { 0.0f, 0.0f } }
 		};
+		static constexpr int32_t screenVerticesCount = sizeof(screenVertices) / sizeof(float);
 	};
 
 }

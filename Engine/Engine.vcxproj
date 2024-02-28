@@ -29,6 +29,7 @@
     <ClCompile Include="src\External\Render\impl\gladImpl.cpp" />
     <ClCompile Include="src\External\Render\OpenGl\OpenGlRenderer.cpp" />
     <ClCompile Include="src\Engine\Render\Scene.cpp" />
+    <ClCompile Include="src\External\render\OpenGl\OpenGlBuffer.cpp" />
     <ClCompile Include="src\External\Window\ImGuiBuild.cpp" />
     <ClCompile Include="src\External\Window\GlfwWindow\GlfwWindow.cpp" />
   </ItemGroup>
@@ -46,6 +47,7 @@
     <ClInclude Include="src\Engine\Render\Camera.h" />
     <ClInclude Include="src\External\Render\OpenGl\OpenGlRenderer.h" />
     <ClInclude Include="src\Engine\Render\Scene.h" />
+    <ClInclude Include="src\External\render\OpenGl\OpenGlBuffer.h" />
     <ClInclude Include="src\External\Window\GlfwWindow\GlfwWindow.fwd.h" />
     <ClInclude Include="src\External\Window\GlfwWindow\GlfwWindow.h" />
   </ItemGroup>

@@ -21,6 +21,11 @@ namespace RT::OpenGl
         resolutionUni.value = { specs.width, specs.height };
         accumulation = specs.accumulate;
 
+        screenBuff = makeLocal<OpenGlVertexBuffer>(static_cast<uint32_t>(sizeof(screenVertices)));
+        screenBuff->setData(sizeof(screenVertices), screenVertices);
+        screenBuff->addVertexAttribute(0, 2, sizeof(Vertices), offsetof(Vertices, Coords));
+        screenBuff->addVertexAttribute(1, 2, sizeof(Vertices), offsetof(Vertices, TexCoords));
+
         resize(resolutionUni.value);
     }
 
@@ -64,14 +69,14 @@ namespace RT::OpenGl
         openGlShader.setUniform(spheresStorage.name, sizeof(Sphere) * scene.spheres.size(), scene.spheres.data());
         
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
-        glBindBuffer(GL_ARRAY_BUFFER, screenBufferId);
+        screenBuff->bind();
 
         accumulationTex->bind(0);
         renderTex->bind(1);
 
-        glDrawArrays(GL_TRIANGLES, 0, sizeof(s_Screen) / sizeof(float));
+        glDrawArrays(GL_TRIANGLES, 0, screenVerticesCount);
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        screenBuff->unbind();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         openGlShader.unuse();
@@ -79,7 +84,6 @@ namespace RT::OpenGl
 
     void OpenGlRenderer::clear()
     {
-        glDeleteBuffers(1, &screenBufferId);
         glDeleteRenderbuffers(1, &renderBufferId);
         glDeleteFramebuffers(1, &frameBufferId);
     }
@@ -89,16 +93,6 @@ namespace RT::OpenGl
         clear();
         resolutionUni.value = size;
         glViewport(0, 0, size.x, size.y);
-
-        glCreateBuffers(1, &screenBufferId);
-        glBindBuffer(GL_ARRAY_BUFFER, screenBufferId);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(s_Screen), s_Screen, GL_STATIC_DRAW);
-
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertices), (void*)offsetof(Vertices, Coords));
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertices), (void*)offsetof(Vertices, TexCoords));
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         glCreateFramebuffers(1, &frameBufferId);
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
