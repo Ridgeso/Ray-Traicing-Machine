@@ -9,6 +9,7 @@
 #include "OpenGlShader.h"
 #include "OpenGlTexture.h"
 #include "OpenGlBuffer.h"
+#include "OpenGlFrameBuffer.h"
 
 namespace RT::OpenGl
 {
@@ -28,7 +29,7 @@ namespace RT::OpenGl
 		void resetFrame() override { frameIndexUni.value = 0; }
 		uint32_t getFrames() const override { return frameIndexUni.value; }
 
-		int32_t getDescriptor() const override { return renderTex->getTexId(); }
+		int32_t getDescriptor() const override { return frameBuffer->getAttachment(1).getTexId(); }
 
 		bool& getAccumulation() override { return accumulation; }
 		bool& drawEnvironment() override { return drawEnvironmentUni.value; }
@@ -52,7 +53,6 @@ namespace RT::OpenGl
 		struct Uniform<void> : UniformBase<> { };
 
 	private:
-		void clear();
 		void resize(const glm::ivec2 size);
 		static void loadOpenGlForGlfw();
 
@@ -72,9 +72,8 @@ namespace RT::OpenGl
 		Uniform<uint32_t> materialsStorage = { "MaterialsBuffer", 0 };
 		Uniform<uint32_t> spheresStorage = { "SpheresBuffer", 0 };
 
-		Local<OpenGlTexture> accumulationTex, renderTex;
 		Local<OpenGlVertexBuffer> screenBuff;
-		uint32_t frameBufferId = 0, renderBufferId = 0;
+		Local<OpenGlFrameBuffer> frameBuffer;
 
 		struct Vertices
 		{
