@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\External\render\OpenGl\OpenGlTexture.cpp" />
     <ClCompile Include="src\Engine\Render\Shader.cpp" />
     <ClCompile Include="src\External\Render\OpenGl\OpenGlShader.cpp" />
     <ClCompile Include="src\Engine\Core\Application.cpp" />
@@ -32,6 +33,7 @@
     <ClCompile Include="src\External\Window\GlfwWindow\GlfwWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\External\render\OpenGl\OpenGlTexture.h" />
     <ClInclude Include="src\Engine\Render\Shader.h" />
     <ClInclude Include="src\External\Render\OpenGl\OpenGlShader.h" />
     <ClInclude Include="src\Engine\Core\Application.h" />

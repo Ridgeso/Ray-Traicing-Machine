@@ -1,4 +1,5 @@
 #pragma once
+#include <Engine/Core/Base.h>
 #include <vector>
 #include <cstdint>
 #include <random>
@@ -6,6 +7,7 @@
 
 #include "Engine/Render/Renderer.h"
 #include "OpenGlShader.h"
+#include "OpenGlTexture.h"
 
 namespace RT::OpenGl
 {
@@ -25,7 +27,7 @@ namespace RT::OpenGl
 		void resetFrame() override { frameIndexUni.value = 0; }
 		uint32_t getFrames() const override { return frameIndexUni.value; }
 
-		int32_t getDescriptor() const override { return renderId; }
+		int32_t getDescriptor() const override { return renderTex->getTexId(); }
 
 		bool& getAccumulation() override { return accumulation; }
 		bool& drawEnvironment() override { return drawEnvironmentUni.value; }
@@ -69,8 +71,7 @@ namespace RT::OpenGl
 		Uniform<uint32_t> materialsStorage = { "MaterialsBuffer", 0 };
 		Uniform<uint32_t> spheresStorage = { "SpheresBuffer", 0 };
 
-		OpenGlShader rtShader;
-		uint32_t accumulationId = 0, renderId = 0;
+		Local<OpenGlTexture> accumulationTex, renderTex;
 		uint32_t screenBufferId = 0, frameBufferId = 0, renderBufferId = 0;
 
 		struct Vertices

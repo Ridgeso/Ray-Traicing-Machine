@@ -66,17 +66,10 @@ namespace RT::OpenGl
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
         glBindBuffer(GL_ARRAY_BUFFER, screenBufferId);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, accumulationId);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, renderId);
-        
+        accumulationTex->bind(0);
+        renderTex->bind(1);
+
         glDrawArrays(GL_TRIANGLES, 0, sizeof(s_Screen) / sizeof(float));
-        
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, 0);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -86,8 +79,6 @@ namespace RT::OpenGl
 
     void OpenGlRenderer::clear()
     {
-        glDeleteTextures(1, &accumulationId);
-        glDeleteTextures(1, &renderId);
         glDeleteBuffers(1, &screenBufferId);
         glDeleteRenderbuffers(1, &renderBufferId);
         glDeleteFramebuffers(1, &frameBufferId);
@@ -112,21 +103,11 @@ namespace RT::OpenGl
         glCreateFramebuffers(1, &frameBufferId);
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
 
-        #define AttachColorTexture(TexId, Format, Width, Height)                                  \
-            glGenTextures(1, &TexId);                                                             \
-            glBindTexture(GL_TEXTURE_2D, TexId);                                                  \
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);                    \
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);                    \
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);                  \
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);                  \
-            glTexImage2D(GL_TEXTURE_2D, 0, Format, Width, Height, 0, GL_RGBA, GL_FLOAT, nullptr); \
-            glBindTexture(GL_TEXTURE_2D, 0)
+        accumulationTex = makeLocal<OpenGlTexture>(resolutionUni.value, ImageFormat::RGBA32F);
+        renderTex = makeLocal<OpenGlTexture>(resolutionUni.value, ImageFormat::RGBA32F);
 
-        AttachColorTexture(accumulationId, GL_RGBA32F, resolutionUni.value.x, resolutionUni.value.y);
-        AttachColorTexture(renderId, GL_RGBA32F, resolutionUni.value.x, resolutionUni.value.y);
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, accumulationId, 0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, renderId, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, accumulationTex->getTexId(), 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, renderTex->getTexId(), 0);
 
         glGenRenderbuffers(1, &renderBufferId);
         glBindRenderbuffer(GL_RENDERBUFFER, renderBufferId);
