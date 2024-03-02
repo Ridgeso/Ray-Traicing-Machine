@@ -23,8 +23,7 @@ namespace RT::OpenGl
 
         screenBuff = makeLocal<OpenGlVertexBuffer>(static_cast<uint32_t>(sizeof(screenVertices)));
         screenBuff->setData(sizeof(screenVertices), screenVertices);
-        screenBuff->addVertexAttribute(0, 2, sizeof(Vertices), offsetof(Vertices, Coords));
-        screenBuff->addVertexAttribute(1, 2, sizeof(Vertices), offsetof(Vertices, TexCoords));
+        screenBuff->registerAttributes({ VertexElement::Float2, VertexElement::Float2 });
 
         frameBuffer = makeLocal<OpenGlFrameBuffer>(resolutionUni.value, 2);
     }

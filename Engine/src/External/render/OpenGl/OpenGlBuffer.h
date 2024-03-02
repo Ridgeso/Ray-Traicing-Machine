@@ -1,26 +1,30 @@
 #pragma once
 #include <cstdint>
+#include <tuple>
+
+#include "Engine/Render/Buffer.h"
 
 namespace RT::OpenGl
 {
 
-	class OpenGlVertexBuffer
+	class OpenGlVertexBuffer : public VertexBuffer
 	{
 	public:
 		OpenGlVertexBuffer(const uint32_t size);
-		~OpenGlVertexBuffer();
+		OpenGlVertexBuffer(const uint32_t size, const void* data);
+		~OpenGlVertexBuffer() final;
 
-		void setData(const uint32_t size, const void* data) const;
+		void registerAttributes(const VertexElements& elements) const final;
+		void setData(const uint32_t size, const void* data) const final;
 
-		void addVertexAttribute(
-			const int32_t pos,
-			const int32_t size,
-			const int32_t attribSize,
-			const int32_t offset) const;
+		void bind() const final;
+		void unbind() const final;
 
-		void bind() const;
-		void unbind() const;
+	private:
+		int32_t calculateStride(const VertexElements& elements) const;
 
+		constexpr static int32_t elementType2Size(const VertexElement element);
+		constexpr static uint32_t elementType2GlType(const VertexElement element);
 	private:
 		uint32_t bufferId;
 	};
