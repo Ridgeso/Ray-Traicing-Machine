@@ -34,6 +34,8 @@ namespace RT
 		renderer(createRenderer()),
 		rtShader(createShader()),
 		screenBuff(),
+		frameBuffer(),
+		lastWinSize(0),
 		camera(45.0f, 0.01f, 100.0f)
 	{
 		MainApp = this;
@@ -43,7 +45,7 @@ namespace RT
 		mainWindow->init(winSpecs);
 
 		glm::ivec2 windowSize = mainWindow->getSize();
-		RenderSpecs renderSpecs = { windowSize };
+		RenderSpecs renderSpecs = { };
 		renderer->init(renderSpecs);
 
 		scene.materials.emplace_back(Material{ { 0.0f, 0.0f, 0.0f }, 0.0, { 0.0f, 0.0f, 0.0f }, 0.0f,  0.0f, 0.0f, 1.0f });
@@ -92,6 +94,8 @@ namespace RT
 
 		screenBuff = VertexBuffer::create(sizeof(screenVertices), screenVertices);
 		screenBuff->registerAttributes({ VertexElement::Float2, VertexElement::Float2 });
+
+		frameBuffer = FrameBuffer::create(windowSize, 2);
 
 		lastMousePos = windowSize / 2;
 	}
@@ -228,7 +232,7 @@ namespace RT
 		}
 
 		ImGui::Image(
-			(ImTextureID)renderer->getDescriptor(),
+			(ImTextureID)frameBuffer->getAttachment(1).getTexId(),
 			viewportSize,
 			ImVec2(0, 1),
 			ImVec2(1, 0)
@@ -243,18 +247,27 @@ namespace RT
 
 	void Application::update()
 	{
-		updateView(appFrameDuration / 1000.0f);
 		glm::ivec2 winSize = mainWindow->getSize();
-		renderer->recreateRenderer(winSize);
-
+		
+		updateView(appFrameDuration / 1000.0f);
+		
 		rtShader->use();
-		rtShader->setUniform("Resolution", 1, (glm::vec2)winSize);
+		if (lastWinSize != winSize)
+		{
+			frameBuffer = FrameBuffer::create(winSize, 2);
+			rtShader->setUniform("Resolution", 1, (glm::vec2)winSize);
+			lastWinSize = winSize;
+		}
 		rtShader->setUniform("CameraBuffer", sizeof(Camera::Spec), camera.GetSpec());
 		rtShader->unuse();
+		frameBuffer->getAttachment(0).bind(0);
+		frameBuffer->getAttachment(1).bind(1);
 
 		Timer timeit;
 		camera.ResizeCamera((int32_t)viewportSize.x, (int32_t)viewportSize.y);
+		frameBuffer->bind();
 		renderer->render(camera, *rtShader, *screenBuff, scene);
+		frameBuffer->unbind();
 		lastFrameDuration = timeit.Ellapsed();
 	}
 

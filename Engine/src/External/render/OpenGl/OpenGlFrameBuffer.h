@@ -3,21 +3,22 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+#include "Engine/Render/FrameBuffer.h"
 #include "OpenGlTexture.h"
 
 namespace RT::OpenGl
 {
 
-	class OpenGlFrameBuffer
+	class OpenGlFrameBuffer : public FrameBuffer
 	{
 	public:
-		OpenGlFrameBuffer(const glm::ivec2 size_, const int32_t numOfAttachments);
-		~OpenGlFrameBuffer();
+		OpenGlFrameBuffer(const glm::ivec2 size, const int32_t numOfAttachments);
+		~OpenGlFrameBuffer() final;
 
-		void bind() const;
-		void unbind() const;
+		void bind() const final;
+		void unbind() const final;
 
-		const OpenGlTexture& getAttachment(const uint32_t index = 0) const;
+		const Texture& getAttachment(const uint32_t index = 0) const final;
 
 	private:
 		uint32_t renderId;

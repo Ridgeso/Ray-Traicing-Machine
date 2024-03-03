@@ -20,6 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\Render\Buffer.cpp" />
+    <ClCompile Include="src\Engine\Render\FrameBuffer.cpp" />
+    <ClCompile Include="src\Engine\Render\Texture.cpp" />
     <ClCompile Include="src\External\render\OpenGl\OpenGlFrameBuffer.cpp" />
     <ClCompile Include="src\External\render\OpenGl\OpenGlTexture.cpp" />
     <ClCompile Include="src\Engine\Render\Shader.cpp" />
@@ -37,6 +39,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Engine\Render\Buffer.h" />
+    <ClInclude Include="src\Engine\Render\FrameBuffer.h" />
+    <ClInclude Include="src\Engine\Render\Texture.h" />
     <ClInclude Include="src\External\render\OpenGl\OpenGlFrameBuffer.h" />
     <ClInclude Include="src\External\render\OpenGl\OpenGlTexture.h" />
     <ClInclude Include="src\Engine\Render\Shader.h" />

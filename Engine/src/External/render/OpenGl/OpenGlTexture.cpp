@@ -5,8 +5,8 @@
 namespace RT::OpenGl
 {
 
-	OpenGlTexture::OpenGlTexture(const glm::ivec2 size_, const ImageFormat imageFormat_)
-		: texId{}, size{size_}, imageFormat{imageFormat_}
+	OpenGlTexture::OpenGlTexture(const glm::ivec2 size, const ImageFormat imageFormat)
+		: texId{}, size{size}, imageFormat{imageFormat}
 	{
 		glGenTextures(1, &texId);
 		glBindTexture(GL_TEXTURE_2D, texId);

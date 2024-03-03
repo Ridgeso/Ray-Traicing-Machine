@@ -8,6 +8,7 @@
 #include "Engine/Render/Renderer.h"
 #include "Engine/Render/Shader.h"
 #include "Engine/Render/Buffer.h"
+#include "Engine/Render/FrameBuffer.h"
 
 namespace RT
 {
@@ -47,9 +48,11 @@ namespace RT
 		Local<Renderer> renderer;
 		Local<Shader> rtShader;
 		Local<VertexBuffer> screenBuff;
+		Share<FrameBuffer> frameBuffer;
 		Camera camera;
 		Scene scene;
 
+		glm::ivec2 lastWinSize;
 		glm::vec2 lastMousePos;
 		static Application* MainApp;
 

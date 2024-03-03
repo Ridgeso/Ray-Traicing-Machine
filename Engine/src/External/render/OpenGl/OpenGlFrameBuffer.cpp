@@ -6,8 +6,8 @@
 namespace RT::OpenGl
 {
 
-	OpenGlFrameBuffer::OpenGlFrameBuffer(const glm::ivec2 size_, const int32_t numOfAttachments)
-		: renderId{}, frameId{}, size{size_}
+	OpenGlFrameBuffer::OpenGlFrameBuffer(const glm::ivec2 size, const int32_t numOfAttachments)
+		: renderId{}, frameId{}, size{size}
 	{
         glCreateFramebuffers(1, &frameId);
         glBindFramebuffer(GL_FRAMEBUFFER, frameId);
@@ -51,7 +51,7 @@ namespace RT::OpenGl
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    const OpenGlTexture& OpenGlFrameBuffer::getAttachment(const uint32_t index) const
+    const Texture& OpenGlFrameBuffer::getAttachment(const uint32_t index) const
     {
         return attachments[index];
     }
