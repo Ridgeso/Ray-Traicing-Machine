@@ -23,6 +23,7 @@ namespace RT
 
 		virtual void registerAttributes(const VertexElements& elements) const = 0;
 		virtual void setData(const uint32_t size, const void* data) const = 0;
+		virtual const int32_t getCount() const = 0;
 
 		virtual void bind() const = 0;
 		virtual void unbind() const = 0;

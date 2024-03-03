@@ -17,21 +17,21 @@ namespace RT
 		GlfwWindow() = default;
 		~GlfwWindow() = default;
 		
-		void init(const WindowSpecs& specs) override;
-		void shutDown() override;
+		void init(const WindowSpecs& specs) final;
+		void shutDown() final;
 
-		bool update() override;
-		bool pullEvents() override;
+		bool update() final;
+		bool pullEvents() final;
 
-		void beginUI() override;
-		void endUI() override;
+		void beginUI() final;
+		void endUI() final;
 
-		glm::vec2 getMousePos() const override;
-		bool isKeyPressed(int32_t key) const override;
-		bool isMousePressed(int32_t key) const override;
-		glm::ivec2 getSize() const override;
+		glm::vec2 getMousePos() const final;
+		bool isKeyPressed(int32_t key) const final;
+		bool isMousePressed(int32_t key) const final;
+		glm::ivec2 getSize() const final;
 
-		void cursorMode(int32_t state) const override;
+		void cursorMode(int32_t state) const final;
 
 	private:
 		void initImGui();

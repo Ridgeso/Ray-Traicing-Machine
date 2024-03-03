@@ -20,74 +20,22 @@ namespace RT::OpenGl
 		OpenGlRenderer() = default;
 		~OpenGlRenderer() = default;
 
-		void init(const RenderSpecs& specs) override;
-		void shutDown() override;
+		void init(const RenderSpecs& specs) final;
+		void shutDown() final;
 
-		bool recreateRenderer(const glm::ivec2 size) override;
-		void render(const Camera& camera, const Shader& shader, const Scene& scene) override;
+		bool recreateRenderer(const glm::ivec2 size) final;
+		void render(const Camera& camera, const Shader& shader, const VertexBuffer& vbuffer, const Scene& scene) final;
 
-		void resetFrame() override { frameIndexUni.value = 0; }
-		uint32_t getFrames() const override { return frameIndexUni.value; }
-
-		int32_t getDescriptor() const override { return frameBuffer->getAttachment(1).getTexId(); }
-
-		bool& getAccumulation() override { return accumulation; }
-		bool& drawEnvironment() override { return drawEnvironmentUni.value; }
-		uint32_t& maxBounces() override { return maxBouncesUni.value; }
-		uint32_t& maxFrames() override { return maxFramesUni.value; }
-
-	private:
-		template <typename Data = void>
-		struct UniformBase
-		{
-			const std::string name;
-		};
-
-		template <typename Data = void>
-		struct Uniform : UniformBase<Data>
-		{
-			Data value;
-		};
-
-		template <>
-		struct Uniform<void> : UniformBase<> { };
+		int32_t getDescriptor() const final { return frameBuffer->getAttachment(1).getTexId(); }
+		const RenderSpecs& getSpecs() const { return specs; }
 
 	private:
 		void resize(const glm::ivec2 size);
 		static void loadOpenGlForGlfw();
 
 	private:
-		bool accumulation;
-
-		Uniform<const int32_t> accumulationSamplerUni = { "AccumulationTexture", 0 };
-		Uniform<const int32_t> renderSamplerUni = { "RenderTexture", 1 };
-		Uniform<bool> drawEnvironmentUni = { "DrawEnvironment", false };
-		Uniform<uint32_t> maxBouncesUni = { "MaxBounces", 5 };
-		Uniform<uint32_t> maxFramesUni = { "MaxFrames", 1 };
-		Uniform<int32_t> frameIndexUni = { "FrameIndex", 0 };
-		Uniform<glm::ivec2> resolutionUni = { "Resolution", glm::ivec2(0) };
-		Uniform<> materialsCountUni = { "MaterialsCount" };
-		Uniform<> spheresCountUni = { "SpheresCount" };
-		Uniform<uint32_t> cameraStorage = { "CameraBuffer", 0 };
-		Uniform<uint32_t> materialsStorage = { "MaterialsBuffer", 0 };
-		Uniform<uint32_t> spheresStorage = { "SpheresBuffer", 0 };
-
-		Local<OpenGlVertexBuffer> screenBuff;
+		RenderSpecs specs;
 		Local<OpenGlFrameBuffer> frameBuffer;
-
-		struct Vertices
-		{
-			float Coords[2];
-			float TexCoords[2];
-		} static constexpr screenVertices[] = {
-			{ { -1.0f, -1.0f }, { 0.0f, 0.0f } },
-			{ {  1.0f, -1.0f }, { 1.0f, 0.0f } },
-			{ {  1.0f,  1.0f }, { 1.0f, 1.0f } },
-			{ {  1.0f,  1.0f }, { 1.0f, 1.0f } },
-			{ { -1.0f,  1.0f }, { 0.0f, 1.0f } },
-			{ { -1.0f, -1.0f }, { 0.0f, 0.0f } }
-		};
-		static constexpr int32_t screenVerticesCount = sizeof(screenVertices) / sizeof(float);
 	};
 
 }

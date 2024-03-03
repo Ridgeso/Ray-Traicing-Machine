@@ -6,7 +6,7 @@ namespace RT::OpenGl
 {
 
 	OpenGlVertexBuffer::OpenGlVertexBuffer(const uint32_t size)
-		: bufferId{}
+		: bufferId{}, size{size}, count{0}
 	{
 		glCreateBuffers(1, &bufferId);
 		glBindBuffer(GL_ARRAY_BUFFER, bufferId);
@@ -14,6 +14,7 @@ namespace RT::OpenGl
 	}
 
 	OpenGlVertexBuffer::OpenGlVertexBuffer(const uint32_t size, const void* data)
+		: OpenGlVertexBuffer(size)
 	{
 		glCreateBuffers(1, &bufferId);
 		glBindBuffer(GL_ARRAY_BUFFER, bufferId);
@@ -29,14 +30,19 @@ namespace RT::OpenGl
 	{
 		bind();
 		const auto stride = calculateStride(elements);
+		auto sumOfComp = 0;
 		auto offset = 0;
 		for (auto pos = 0; pos < elements.size(); pos++)
 		{
-			glVertexAttribPointer(pos, Utils::getNrOfComponents(elements[pos]), elementType2GlType(elements[pos]), GL_FALSE, stride, (void*)offset);
+			const auto nrOfComp = Utils::getNrOfComponents(elements[pos]);
+			sumOfComp += nrOfComp;
+			glVertexAttribPointer(pos, nrOfComp, elementType2GlType(elements[pos]), GL_FALSE, stride, (void*)offset);
 			glEnableVertexAttribArray(pos);
 			offset += elementType2Size(elements[pos]);
 		}
 		unbind();
+
+		count = size / stride * sumOfComp;
 	}
 
 	void OpenGlVertexBuffer::setData(const uint32_t size, const void* data) const

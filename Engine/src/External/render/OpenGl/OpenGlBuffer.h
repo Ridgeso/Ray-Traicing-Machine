@@ -16,6 +16,7 @@ namespace RT::OpenGl
 
 		void registerAttributes(const VertexElements& elements) const final;
 		void setData(const uint32_t size, const void* data) const final;
+		const int32_t getCount() const final { return count; }
 
 		void bind() const final;
 		void unbind() const final;
@@ -27,6 +28,8 @@ namespace RT::OpenGl
 		constexpr static uint32_t elementType2GlType(const VertexElement element);
 	private:
 		uint32_t bufferId;
+		uint32_t size;
+		mutable int32_t count;
 	};
 
 }

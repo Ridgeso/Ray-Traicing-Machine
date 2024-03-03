@@ -7,6 +7,7 @@
 #include "Engine/Window/Window.h"
 #include "Engine/Render/Renderer.h"
 #include "Engine/Render/Shader.h"
+#include "Engine/Render/Buffer.h"
 
 namespace RT
 {
@@ -45,11 +46,32 @@ namespace RT
 		Local<Window> mainWindow;
 		Local<Renderer> renderer;
 		Local<Shader> rtShader;
+		Local<VertexBuffer> screenBuff;
 		Camera camera;
 		Scene scene;
 
 		glm::vec2 lastMousePos;
 		static Application* MainApp;
+
+		bool accumulation = false;
+		uint32_t framesCount = 1;
+		uint32_t maxBounces = 5;
+		uint32_t maxFrames = 1;
+		bool drawEnvironment = false;
+
+		struct Vertices
+		{
+			float Coords[2];
+			float TexCoords[2];
+		} static constexpr screenVertices[] = {
+			{ { -1.0f, -1.0f }, { 0.0f, 0.0f } },
+			{ {  1.0f, -1.0f }, { 1.0f, 0.0f } },
+			{ {  1.0f,  1.0f }, { 1.0f, 1.0f } },
+			{ {  1.0f,  1.0f }, { 1.0f, 1.0f } },
+			{ { -1.0f,  1.0f }, { 0.0f, 1.0f } },
+			{ { -1.0f, -1.0f }, { 0.0f, 0.0f } }
+		};
+		static constexpr int32_t screenVerticesCount = sizeof(screenVertices) / sizeof(float);
 	};
 
 	Application* CreateApplication(ApplicationCommandLineArgs args);

@@ -33,6 +33,7 @@ namespace RT
 		mainWindow(createWindow()),
 		renderer(createRenderer()),
 		rtShader(createShader()),
+		screenBuff(),
 		camera(45.0f, 0.01f, 100.0f)
 	{
 		MainApp = this;
@@ -42,9 +43,8 @@ namespace RT
 		mainWindow->init(winSpecs);
 
 		glm::ivec2 windowSize = mainWindow->getSize();
-		RenderSpecs renderSpecs = { windowSize.x, windowSize.y, false };
+		RenderSpecs renderSpecs = { windowSize };
 		renderer->init(renderSpecs);
-		rtShader->load("..\\Engine\\assets\\shaders\\RayTracing.shader");
 
 		scene.materials.emplace_back(Material{ { 0.0f, 0.0f, 0.0f }, 0.0, { 0.0f, 0.0f, 0.0f }, 0.0f,  0.0f, 0.0f, 1.0f });
 		scene.materials.emplace_back(Material{ { 1.0f, 1.0f, 1.0f }, 0.0, { 1.0f, 1.0f, 1.0f }, 0.7f,  0.8f, 0.0f, 1.5f });
@@ -74,6 +74,25 @@ namespace RT
 			scene.spheres[scene.spheres.size() - 1].materialId = scene.materials.size() - 1;
 		}
 	
+		rtShader->load("..\\Engine\\assets\\shaders\\RayTracing.shader");
+		rtShader->use();
+		rtShader->setUniform("AccumulationTexture", 1, 0);
+		rtShader->setUniform("RenderTexture", 1, 1);
+		rtShader->setUniform("DrawEnvironment", 1, (float)drawEnvironment);
+		rtShader->setUniform("MaxBounces", 1, maxBounces);
+		rtShader->setUniform("MaxFrames", 1, maxFrames);
+		rtShader->setUniform("FrameIndex", 1, framesCount);
+		rtShader->setUniform("Resolution", 1, (glm::vec2)glm::ivec2(0));
+		rtShader->setUniform("CameraBuffer", sizeof(Camera::Spec), camera.GetSpec());
+		rtShader->setUniform("MaterialsCount", 1, scene.materials.size());
+		rtShader->setUniform("MaterialsBuffer", sizeof(Material) * scene.materials.size(), scene.materials.data());
+		rtShader->setUniform("SpheresCount", 1, scene.spheres.size());
+		rtShader->setUniform("SpheresBuffer", sizeof(Sphere) * scene.spheres.size(), scene.spheres.data());
+		rtShader->unuse();
+
+		screenBuff = VertexBuffer::create(sizeof(screenVertices), screenVertices);
+		screenBuff->registerAttributes({ VertexElement::Float2, VertexElement::Float2 });
+
 		lastMousePos = windowSize / 2;
 	}
 
@@ -107,34 +126,63 @@ namespace RT
     {
 		ImGui::Begin("Settings");
 		ImGui::Text("App frame took: %.3fms", appFrameDuration);
-		ImGui::Text("Last render took: %.3fms", lastFrameDuration);
-		ImGui::Text("Frames: %d", renderer->getFrames());
-		ImGui::DragInt("Bounces Limit", (int32_t*)&renderer->maxBounces(), 1, 1, 15);
-		ImGui::DragInt("Precalculated Frames Limit", (int32_t*)&renderer->maxFrames(), 1, 1, 15);
+		ImGui::Text("CPU time: %.3fms", lastFrameDuration);
+		ImGui::Text("GPU time: %.3fms", appFrameDuration - lastFrameDuration);
+		ImGui::Text("Frames: %d", framesCount);
+
+		framesCount++;
+		if (!accumulation)
+		{
+			framesCount = 1;
+		}
+
+		rtShader->use();
+		if (ImGui::DragInt("Bounces Limit", (int32_t*)&maxBounces, 1, 1, 15))
+		{
+			rtShader->setUniform("MaxBounces", 1, maxBounces);
+		}
+		if (ImGui::DragInt("Precalculated Frames Limit", (int32_t*)&maxFrames, 1, 1, 15))
+		{
+			rtShader->setUniform("MaxFrames", 1, maxFrames);
+		}
 		if (ImGui::Button("Reset"))
-			renderer->resetFrame();
-		ImGui::Checkbox("Accumulate", &renderer->getAccumulation());
-		ImGui::Checkbox("Draw Environment", &renderer->drawEnvironment());
+		{
+			framesCount = 1;
+		}
+		rtShader->setUniform("FrameIndex", 1, framesCount);
+		ImGui::Checkbox("Accumulate", &accumulation);
+		if (ImGui::Checkbox("Draw Environment", &drawEnvironment))
+		{
+			rtShader->setUniform("DrawEnvironment", 1, (float)drawEnvironment);
+		}
+		bool shouldUpdateMaterials = false;
 		if (ImGui::Button("Add Material"))
+		{
 			scene.materials.emplace_back(Material{ { 0.0f, 0.0f, 0.0f }, 0.0, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f });
+			shouldUpdateMaterials = true;
+		}
+		bool shouldUpdateSpehere = false;
 		if (ImGui::Button("Add Sphere"))
+		{
 			scene.spheres.emplace_back(Sphere{ { 0.0f, 0.0f, -2.0f }, 1.0f, 0 });
+			shouldUpdateSpehere = true;
+		}
 		ImGui::End();
 
 		ImGui::Begin("Scene");
 		
 		ImGui::Text("Materials:");
-		for (size_t i = 1; i < scene.materials.size(); i++)
+		for (size_t materialId = 1; materialId < scene.materials.size(); materialId++)
 		{
-			ImGui::PushID((int32_t)i);
-			Material& material = scene.materials[i];
+			ImGui::PushID((int32_t)materialId);
+			Material& material = scene.materials[materialId];
 
-			ImGui::ColorEdit3("Albedo", glm::value_ptr(material.albedo));
-			ImGui::ColorEdit3("Emission Color", glm::value_ptr(material.emissionColor));
-			ImGui::DragFloat("Roughness", &material.roughness, 0.005f, 0.0f, 1.0f);
-			ImGui::DragFloat("Metalic", &material.metalic, 0.005f, 0.0f, 1.0f);
-			ImGui::DragFloat("Emission Power", &material.emissionPower, 0.005f, 0.0f, std::numeric_limits<float>::max());
-			ImGui::DragFloat("Refraction Index", &material.refractionRatio, 0.005f, 1.0f, 32.0f);
+			shouldUpdateMaterials |= ImGui::ColorEdit3("Albedo", glm::value_ptr(material.albedo));
+			shouldUpdateMaterials |= ImGui::ColorEdit3("Emission Color", glm::value_ptr(material.emissionColor));
+			shouldUpdateMaterials |= ImGui::DragFloat("Roughness", &material.roughness, 0.005f, 0.0f, 1.0f);
+			shouldUpdateMaterials |= ImGui::DragFloat("Metalic", &material.metalic, 0.005f, 0.0f, 1.0f);
+			shouldUpdateMaterials |= ImGui::DragFloat("Emission Power", &material.emissionPower, 0.005f, 0.0f, std::numeric_limits<float>::max());
+			shouldUpdateMaterials |= ImGui::DragFloat("Refraction Index", &material.refractionRatio, 0.005f, 1.0f, 32.0f);
 
 			ImGui::Separator();
 			ImGui::PopID();
@@ -143,20 +191,31 @@ namespace RT
 		ImGui::Separator();
 
 		ImGui::Text("Spheres:");
-		for (size_t i = 0; i < scene.spheres.size(); i++)
+		for (size_t sphereId = 0; sphereId < scene.spheres.size(); sphereId++)
 		{
-			ImGui::PushID((int32_t)i);
-			Sphere& sphere = scene.spheres[i];
+			ImGui::PushID((int32_t)sphereId);
+			Sphere& sphere = scene.spheres[sphereId];
 
-			ImGui::DragFloat3("Position", glm::value_ptr(sphere.position), 0.1f);
-			ImGui::DragFloat("Radius", &sphere.radius, 0.01f, 0.0f, std::numeric_limits<float>::max());
-			ImGui::SliderInt("Material", &sphere.materialId, 1, scene.materials.size() - 1);
+			shouldUpdateSpehere |= ImGui::DragFloat3("Position", glm::value_ptr(sphere.position), 0.1f);
+			shouldUpdateSpehere |= ImGui::DragFloat("Radius", &sphere.radius, 0.01f, 0.0f, std::numeric_limits<float>::max());
+			shouldUpdateSpehere |= ImGui::SliderInt("Material", &sphere.materialId, 1, scene.materials.size() - 1);
 
 			ImGui::Separator();
 			ImGui::PopID();
 		}
 
 		ImGui::End();
+		if (shouldUpdateMaterials)
+		{
+			rtShader->setUniform("MaterialsCount", 1, scene.materials.size());
+			rtShader->setUniform("MaterialsBuffer", sizeof(Material) * scene.materials.size(), scene.materials.data());
+		}
+		if (shouldUpdateSpehere)
+		{
+			rtShader->setUniform("SpheresCount", 1, scene.spheres.size());
+			rtShader->setUniform("SpheresBuffer", sizeof(Sphere) * scene.spheres.size(), scene.spheres.data());
+		}
+		rtShader->unuse();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin("Viewport");
@@ -165,7 +224,7 @@ namespace RT
 		if (viewPort.x != viewportSize.x || viewPort.y != viewportSize.y)
 		{
 			viewportSize = viewPort;
-			renderer->resetFrame();
+			framesCount = 1;
 		}
 
 		ImGui::Image(
@@ -188,9 +247,14 @@ namespace RT
 		glm::ivec2 winSize = mainWindow->getSize();
 		renderer->recreateRenderer(winSize);
 
+		rtShader->use();
+		rtShader->setUniform("Resolution", 1, (glm::vec2)winSize);
+		rtShader->setUniform("CameraBuffer", sizeof(Camera::Spec), camera.GetSpec());
+		rtShader->unuse();
+
 		Timer timeit;
 		camera.ResizeCamera((int32_t)viewportSize.x, (int32_t)viewportSize.y);
-		renderer->render(camera, *rtShader, scene);
+		renderer->render(camera, *rtShader, *screenBuff, scene);
 		lastFrameDuration = timeit.Ellapsed();
 	}
 
@@ -270,7 +334,7 @@ namespace RT
 		if (moved)
 		{
 			camera.RecalculateInvView();
-			renderer->resetFrame();
+			framesCount = 0;
 		}
 	}
 

@@ -45,14 +45,14 @@ namespace RT::OpenGl
 		OpenGlShader() = default;
 		~OpenGlShader() = default;
 
-		void use() const override;
-		void unuse() const override;
-		void destroy() override;
-		const uint32_t getId() const override { return programId; }
+		void use() const final;
+		void unuse() const final;
+		void destroy() final;
+		const uint32_t getId() const final { return programId; }
 
-		void load(const std::string& shaderPath) override;
+		void load(const std::string& shaderPath) final;
 		
-		void setUniformImpl(const std::string& uniName, const int32_t size, const void* value) const override;
+		void setUniformImpl(const std::string& uniName, const int32_t size, const void* value) const final;
 
 	private:
 		void setStorage(const int32_t pos, const size_t size, const void* data) const;
