@@ -1,18 +1,30 @@
+#include "RenderBase.h"
 #include "Buffer.h"
 
 #include "External/Render/OpenGl/OpenGlBuffer.h"
+#include "External/Render/Vulkan/VulkanBuffer.h"
 
 namespace RT
 {
 
 	Local<VertexBuffer> VertexBuffer::create(const uint32_t size)
 	{
-		return makeLocal<OpenGl::OpenGlVertexBuffer>(size);
+		switch (GlobalRenderAPI)
+		{
+			case RenderAPI::OpenGL: return makeLocal<OpenGl::OpenGlVertexBuffer>(size);
+			case RenderAPI::Vulkan: return makeLocal<Vulkan::VulkanVertexBuffer>(size);
+		}
+		return nullptr;
 	}
 
 	Local<VertexBuffer> VertexBuffer::create(const uint32_t size, const void* data)
 	{
-		return makeLocal<OpenGl::OpenGlVertexBuffer>(size, data);
+		switch (GlobalRenderAPI)
+		{
+			case RenderAPI::OpenGL: return makeLocal<OpenGl::OpenGlVertexBuffer>(size, data);
+			case RenderAPI::Vulkan: return makeLocal<Vulkan::VulkanVertexBuffer>(size, data);
+		}
+		return nullptr;
 	}
 
 	VertexBuffer::~VertexBuffer() {}
