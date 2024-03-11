@@ -3,7 +3,8 @@
 
 # bin
 **/x64
-**/x86
+**/Debug
+**/Release
 
 # garbage / personal files
 garbage/
