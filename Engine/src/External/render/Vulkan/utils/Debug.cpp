@@ -1,5 +1,5 @@
 #include "Debug.h"
-#include <iostream>
+#include <Engine/Core/Log.h>
 
 #include "External/window/GlfwWindow/Utils.h"
 
@@ -78,7 +78,7 @@ namespace RT::Vulkan
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 	{
-		std::cerr << "[Vulkan] ERR: " << pCallbackData->pMessage << std::endl;
+		RT_LOG_INFO("[Vulkan] ERR: {}", pCallbackData->pMessage);
 		return VK_FALSE;
 	}
 

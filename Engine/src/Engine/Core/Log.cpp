@@ -14,14 +14,14 @@ namespace RT::Core
 	{
         auto logSinks = std::array<spdlog::sink_ptr, 2>{
             makeShare<spdlog::sinks::stdout_color_sink_mt>(),
-            makeShare<spdlog::sinks::basic_file_sink_mt>("FILE_EXPLORER.log", true)
+            makeShare<spdlog::sinks::basic_file_sink_mt>("backlog.log", true)
         };
 
-        logSinks[0]->set_pattern("%^[%T] %n: %v%$");
-        logSinks[1]->set_pattern("[%T] [%l] %n: %v");
+        logSinks[0]->set_pattern("%^[%T:%e][%L] %n: %v%$");
+        logSinks[1]->set_pattern("[%d-%m-%C %T:%e][%l] %n: %v");
 
         engineLogger = makeShare<spdlog::logger>(
-            "Explorer",
+            "ENG",
             logSinks.begin(),
             logSinks.end()
         );
@@ -31,7 +31,7 @@ namespace RT::Core
 
 
         clientLogger = makeShare<spdlog::logger>(
-            "Application",
+            "APP",
             logSinks.begin(),
             logSinks.end()
         );
