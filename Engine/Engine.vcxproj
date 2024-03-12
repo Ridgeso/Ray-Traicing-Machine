@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Engine\Core\Log.cpp" />
     <ClCompile Include="src\Engine\Render\Buffer.cpp" />
     <ClCompile Include="src\Engine\Render\FrameBuffer.cpp" />
     <ClCompile Include="src\Engine\Render\Texture.cpp" />
@@ -45,6 +46,7 @@
     <ClCompile Include="src\External\Window\GlfwWindow\GlfwWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Engine\Core\Log.h" />
     <ClInclude Include="src\Engine\Render\Buffer.h" />
     <ClInclude Include="src\Engine\Render\FrameBuffer.h" />
     <ClInclude Include="src\Engine\Render\RenderBase.h" />
@@ -137,19 +139,19 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <PublicIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\ImGui;$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <PublicIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\spdlog\include;$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <PublicIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\ImGui;$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <PublicIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\spdlog\include;$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <PublicIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\ImGui;$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <PublicIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\spdlog\include;$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <PublicIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\ImGui;$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <PublicIncludeDirectories>$(ProjectDir)src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\spdlog\include;$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -159,7 +161,7 @@
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glad\include;$(SolutionDir)Dependencies\vulkan;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glad\include;$(SolutionDir)Dependencies\vulkan;$(SolutionDir)Dependencies\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
@@ -179,7 +181,7 @@
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;NDEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glad\include;$(SolutionDir)Dependencies\vulkan;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glad\include;$(SolutionDir)Dependencies\vulkan;$(SolutionDir)Dependencies\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
@@ -201,7 +203,7 @@
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glad\include;$(SolutionDir)Dependencies\vulkan;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glad\include;$(SolutionDir)Dependencies\vulkan;$(SolutionDir)Dependencies\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
@@ -223,7 +225,7 @@
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;NDEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glad\include;$(SolutionDir)Dependencies\vulkan;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\glfw\include;$(SolutionDir)Dependencies\glad\include;$(SolutionDir)Dependencies\vulkan;$(SolutionDir)Dependencies\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>

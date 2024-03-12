@@ -44,7 +44,7 @@ namespace RT
 		Spec spec;
 		glm::vec3 direction;
 
-		float fov, near, far;
+		float fov, nearPlane, farPlane;
 		glm::ivec2 viewSize;
 
 		static const glm::vec3 Up;
