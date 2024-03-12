@@ -34,11 +34,13 @@
     <ClCompile Include="src\External\Render\OpenGl\OpenGlRenderer.cpp" />
     <ClCompile Include="src\Engine\Render\Scene.cpp" />
     <ClCompile Include="src\External\render\OpenGl\OpenGlBuffer.cpp" />
+    <ClCompile Include="src\External\render\Vulkan\utils\Debug.cpp" />
     <ClCompile Include="src\External\render\Vulkan\VulkanBuffer.cpp" />
     <ClCompile Include="src\External\render\Vulkan\VulkanFrameBuffer.cpp" />
     <ClCompile Include="src\External\render\Vulkan\VulkanRenderer.cpp" />
     <ClCompile Include="src\External\render\Vulkan\VulkanShader.cpp" />
     <ClCompile Include="src\External\render\Vulkan\VulkanTexture.cpp" />
+    <ClCompile Include="src\External\window\GlfwWindow\Utils.cpp" />
     <ClCompile Include="src\External\Window\ImGuiBuild.cpp" />
     <ClCompile Include="src\External\Window\GlfwWindow\GlfwWindow.cpp" />
   </ItemGroup>
@@ -62,6 +64,7 @@
     <ClInclude Include="src\External\Render\OpenGl\OpenGlRenderer.h" />
     <ClInclude Include="src\Engine\Render\Scene.h" />
     <ClInclude Include="src\External\render\OpenGl\OpenGlBuffer.h" />
+    <ClInclude Include="src\External\render\Vulkan\utils\Debug.h" />
     <ClInclude Include="src\External\render\Vulkan\VulkanBuffer.h" />
     <ClInclude Include="src\External\render\Vulkan\VulkanFrameBuffer.h" />
     <ClInclude Include="src\External\render\Vulkan\VulkanRenderer.h" />
@@ -69,6 +72,7 @@
     <ClInclude Include="src\External\render\Vulkan\VulkanTexture.h" />
     <ClInclude Include="src\External\Window\GlfwWindow\GlfwWindow.fwd.h" />
     <ClInclude Include="src\External\Window\GlfwWindow\GlfwWindow.h" />
+    <ClInclude Include="src\External\window\GlfwWindow\Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\RayTracing.shader" />
