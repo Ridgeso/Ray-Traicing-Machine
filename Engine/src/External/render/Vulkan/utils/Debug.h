@@ -37,4 +37,6 @@ namespace RT::Vulkan
         VkInstanceCreateInfo& createInfo,
         VkDebugUtilsMessengerCreateInfoEXT& debugCreateInfo);
 
+    void setupDebugMessenger(VkInstance& instance);
+
 }

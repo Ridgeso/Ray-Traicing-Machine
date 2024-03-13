@@ -33,6 +33,9 @@ namespace RT
 
 		void cursorMode(int32_t state) const final;
 
+		void* getNativWindow() override { return window; }
+		const void* getNativWindow() const override { return window; }
+
 	private:
 		void initImGui();
 

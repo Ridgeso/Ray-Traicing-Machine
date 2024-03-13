@@ -31,6 +31,9 @@ namespace RT
 		virtual glm::ivec2 getSize() const = 0;
 
 		virtual void cursorMode(int32_t state) const = 0;
+
+		virtual void* getNativWindow() = 0;
+		virtual const void* getNativWindow() const = 0;
 	};
 
 	Local<Window> createWindow();

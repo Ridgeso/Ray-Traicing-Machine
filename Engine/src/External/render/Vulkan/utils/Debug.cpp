@@ -5,6 +5,8 @@
 
 namespace RT::Vulkan
 {
+
+	VkDebugUtilsMessengerEXT debugMessenger{};
 	
 	bool checkValidationLayerSupport()
 	{
@@ -67,12 +69,15 @@ namespace RT::Vulkan
 		VkDebugUtilsMessengerEXT debugMessenger,
 		const VkAllocationCallbacks* pAllocator)
 	{
-		auto destroyValidation = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
-			instance,
-			"vkDestroyDebugUtilsMessengerEXT");
-		if (destroyValidation != nullptr)
+		if constexpr (EnableValidationLayers)
 		{
-			destroyValidation(instance, debugMessenger, pAllocator);
+			auto destroyValidation = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+				instance,
+				"vkDestroyDebugUtilsMessengerEXT");
+			if (destroyValidation != nullptr)
+			{
+				destroyValidation(instance, debugMessenger, pAllocator);
+			}
 		}
 	}
 
@@ -111,6 +116,18 @@ namespace RT::Vulkan
 		{
 			createInfo.enabledLayerCount = 0;
 			createInfo.pNext = nullptr;
+		}
+	}
+
+	void setupDebugMessenger(VkInstance& instance)
+	{
+		if constexpr (EnableValidationLayers)
+		{
+			auto createInfo = populateDebugMessengerCreateInfo();
+			if (createDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS)
+			{
+				throw std::runtime_error("failed to set up debug messenger!");
+			}
 		}
 	}
 
