@@ -1,13 +1,15 @@
 #pragma once
 #include <array>
+#include <vector>
 
 #include <vulkan/vulkan.h>
 
-#include "Swapchain.h"
 #include "External/window/GlfwWindow/GlfwWindow.h"
 
 namespace RT::Vulkan
 {
+
+    struct SwapChainSupportDetails;
 
     struct QueueFamilyIndices
     {
@@ -47,7 +49,7 @@ namespace RT::Vulkan
             VkDeviceMemory& imageMemory);
         uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-    private:
+    //private:
         VkInstance instance{};
         VkDebugUtilsMessengerEXT debugMessenger{};
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;

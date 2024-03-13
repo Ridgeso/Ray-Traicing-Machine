@@ -5,6 +5,7 @@
 #include "Engine/Core/Assert.h"
 #include "utils/Debug.h"
 
+#include "Swapchain.h"
 #include <GLFW/glfw3.h>
 
 namespace RT::Vulkan
