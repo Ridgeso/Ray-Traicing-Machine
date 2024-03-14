@@ -38,6 +38,7 @@ namespace RT
 		void updateView(float ts);
 
 		static Application& Get() { return *MainApp; }
+		Local<Window>& getWindow() { return mainWindow; }
 
 	private:
 		ApplicationSpecs specs;

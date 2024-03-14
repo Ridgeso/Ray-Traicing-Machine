@@ -115,9 +115,9 @@ namespace RT
 
 			update();
 
-			mainWindow->beginUI();
-            layout();
-			mainWindow->endUI();
+			//mainWindow->beginUI();
+            //layout();
+			//mainWindow->endUI();
 
 			specs.isRunning &= mainWindow->update();
 			specs.isRunning &= mainWindow->pullEvents();

@@ -36,7 +36,7 @@ namespace RT::Vulkan
         VkResult acquireNextImage(uint32_t* imageIndex);
         VkResult submitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex);
     
-    private:
+    //private:
         VkFormat swapChainImageFormat;
         VkFormat swapChainDepthFormat;
         VkExtent2D swapChainExtent;

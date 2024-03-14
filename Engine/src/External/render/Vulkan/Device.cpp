@@ -11,7 +11,8 @@
 namespace RT::Vulkan
 {
 
-    Device::Device()
+    Device::Device(Window* window)
+        : window{window}
     {
         createInstance();
         setupDebugMessenger();
@@ -58,10 +59,22 @@ namespace RT::Vulkan
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
 
-        auto debugCreateInfo = VkDebugUtilsMessengerCreateInfoEXT();
-        enableDebugingForCreateInfo(createInfo, debugCreateInfo);
+        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
+        if (enableValidationLayers)
+        {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+            createInfo.ppEnabledLayerNames = validationLayers.data();
 
-        RT_ASSERT(vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS);
+            populateDebugMessengerCreateInfo(debugCreateInfo);
+            createInfo.pNext = &debugCreateInfo;
+        }
+        else
+        {
+            createInfo.enabledLayerCount = 0;
+            createInfo.pNext = nullptr;
+        }
+
+        RT_ASSERT(vkCreateInstance(&createInfo, nullptr, &instance) == VK_SUCCESS);
 
         hasGflwRequiredInstanceExtensions();
     }
@@ -74,25 +87,24 @@ namespace RT::Vulkan
         }
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
         populateDebugMessengerCreateInfo(createInfo);
-        if (createDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to set up debug messenger!");
-        }
+        RT_CORE_ASSERT(createDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) == VK_SUCCESS, "failed to set up debug messenger!");
     }
 
     void Device::createSurface()
     {
-        if (glfwCreateWindowSurface(instance, (GLFWwindow*)window->getNativWindow(), nullptr, &surface) != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to craete window surface");
-        }
+        RT_CORE_ASSERT(glfwCreateWindowSurface(
+            instance,
+            (GLFWwindow*)window->getNativWindow(),
+            nullptr,
+            &surface) == VK_SUCCESS,
+            "failed to craete window surface");
     }
 
     void Device::pickPhysicalDevice()
     {
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
-        RT_ASSERT(deviceCount == 0, "Failed to find any GPU supporting Vulkan");
+        RT_ASSERT(deviceCount != 0, "Failed to find any GPU supporting Vulkan");
         RT_LOG_INFO("Device count: {}", deviceCount);
         auto devices = std::vector<VkPhysicalDevice>(deviceCount);
         vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
@@ -106,7 +118,7 @@ namespace RT::Vulkan
             }
         }
 
-        RT_ASSERT(physicalDevice == VK_NULL_HANDLE, "Failed to find any suitable GPU");
+        RT_ASSERT(physicalDevice != VK_NULL_HANDLE, "Failed to find any suitable GPU");
         vkGetPhysicalDeviceProperties(physicalDevice, &properties);
         RT_LOG_INFO("physical device: {}", properties.deviceName);
     }
@@ -154,7 +166,7 @@ namespace RT::Vulkan
             createInfo.enabledLayerCount = 0;
         }
 
-        RT_CORE_ASSERT(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS, "failed to create logical device");
+        RT_CORE_ASSERT(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) == VK_SUCCESS, "failed to create logical device");
 
         vkGetDeviceQueue(device, indices.graphicsFamily, 0, &graphicsQueue);
         vkGetDeviceQueue(device, indices.presentFamily, 0, &presentQueue);
@@ -170,7 +182,7 @@ namespace RT::Vulkan
         poolInfo.flags =
             VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-        RT_CORE_ASSERT(vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS, "failed to create command pool!");
+        RT_CORE_ASSERT(vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) == VK_SUCCESS, "failed to create command pool!");
     }
 
     bool Device::checkValidationLayerSupport()
@@ -248,7 +260,7 @@ namespace RT::Vulkan
         auto requiredExtensions = getRequiredExtensions();
         for (const auto& required : requiredExtensions)
         {
-            RT_CORE_ASSERT(available.find(required) == available.end(), "Missing required extention: {}", required);
+            RT_CORE_ASSERT(available.find(required) != available.end(), "Missing required extention: {}", required);
         }
     }
 
@@ -389,7 +401,7 @@ namespace RT::Vulkan
         VkImage& image,
         VkDeviceMemory& imageMemory)
     {
-        RT_CORE_ASSERT(vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS, "failed to create image!")
+        RT_CORE_ASSERT(vkCreateImage(device, &imageInfo, nullptr, &image) == VK_SUCCESS, "failed to create image!")
 
         VkMemoryRequirements memRequirements;
         vkGetImageMemoryRequirements(device, image, &memRequirements);
@@ -399,8 +411,8 @@ namespace RT::Vulkan
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-        RT_CORE_ASSERT(vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS, "failed to allocate image memory!");
-        RT_CORE_ASSERT(vkBindImageMemory(device, image, imageMemory, 0) != VK_SUCCESS, "failed to bind image memory!");
+        RT_CORE_ASSERT(vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) == VK_SUCCESS, "failed to allocate image memory!");
+        RT_CORE_ASSERT(vkBindImageMemory(device, image, imageMemory, 0) == VK_SUCCESS, "failed to bind image memory!");
     }
 
     uint32_t Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)

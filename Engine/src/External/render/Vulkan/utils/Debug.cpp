@@ -1,5 +1,6 @@
 #include "Debug.h"
 #include <Engine/Core/Log.h>
+#include <Engine/Core/Assert.h>
 
 #include "External/window/GlfwWindow/Utils.h"
 
@@ -79,6 +80,15 @@ namespace RT::Vulkan
 				destroyValidation(instance, debugMessenger, pAllocator);
 			}
 		}
+	}
+
+	void checkVkResultCallback(VkResult result)
+	{
+		//if (result > VK_SUCCESS)
+		//{
+		//	RT_LOG_ERROR("[Vulkan] VkResult = {}", result);
+		//}
+		//RT_CORE_ASSERT(result >= VK_SUCCESS, "[Vulkan] Required immediate abort VkResult = {}", result)
 	}
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)

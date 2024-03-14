@@ -6,20 +6,20 @@ namespace RT::Vulkan
 {
 
     Pipeline::Pipeline(
-        Device& device,
+        Device* device,
         const std::string& vertFilepath,
         const std::string& fragFilepath,
         const PipelineConfigInfo& configInfo)
-        : device{ device }
+        : device{device}
     {
         createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
     }
 
     Pipeline::~Pipeline()
     {
-        vkDestroyShaderModule(device.device, vertShaderModule, nullptr);
-        vkDestroyShaderModule(device.device, fragShaderModule, nullptr);
-        vkDestroyPipeline(device.device, graphicsPipeline, nullptr);
+        vkDestroyShaderModule(device->device, vertShaderModule, nullptr);
+        vkDestroyShaderModule(device->device, fragShaderModule, nullptr);
+        vkDestroyPipeline(device->device, graphicsPipeline, nullptr);
     }
 
     void Pipeline::createGraphicsPipeline(
@@ -87,12 +87,12 @@ namespace RT::Vulkan
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
         RT_CORE_ASSERT(vkCreateGraphicsPipelines(
-            device.device,
+            device->device,
             VK_NULL_HANDLE,
             1,
             &pipelineInfo,
             nullptr,
-            &graphicsPipeline) != VK_SUCCESS,
+            &graphicsPipeline) == VK_SUCCESS,
             "failed to create graphics pipeline");
     }
 
@@ -100,7 +100,7 @@ namespace RT::Vulkan
     {
         std::ifstream file{filepath, std::ios::ate | std::ios::binary};
 
-        RT_CORE_ASSERT(!file.is_open(), "failed to open file: {}", filepath);
+        RT_CORE_ASSERT(file.is_open(), "failed to open file: {}", filepath);
 
         size_t fileSize = static_cast<size_t>(file.tellg());
         std::vector<char> buffer(fileSize);
@@ -119,7 +119,7 @@ namespace RT::Vulkan
         createInfo.codeSize = code.size();
         createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-        RT_CORE_ASSERT(vkCreateShaderModule(device.device, &createInfo, nullptr, shaderModule) != VK_SUCCESS, "failed to create shader module");
+        RT_CORE_ASSERT(vkCreateShaderModule(device->device, &createInfo, nullptr, shaderModule) == VK_SUCCESS, "failed to create shader module");
     }
 
     void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height)

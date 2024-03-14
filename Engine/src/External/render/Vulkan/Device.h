@@ -19,12 +19,10 @@ namespace RT::Vulkan
         bool presentFamilyHasValue = false;
     };
 
-    class Window;
-
     class Device
     {
     public:
-        Device();
+        Device(Window* window);
         ~Device();
         void createInstance();
         void setupDebugMessenger();
@@ -53,7 +51,7 @@ namespace RT::Vulkan
         VkInstance instance{};
         VkDebugUtilsMessengerEXT debugMessenger{};
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-        GlfwWindow* window;
+        Window* window;
         VkCommandPool commandPool{};
 
         VkDevice device;

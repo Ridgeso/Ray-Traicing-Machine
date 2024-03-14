@@ -6,7 +6,7 @@
 namespace RT
 {
 
-	RenderAPI GlobalRenderAPI = RenderAPI::OpenGL;
+	RenderAPI GlobalRenderAPI = RenderAPI::Vulkan;
 
 	Local<Renderer> createRenderer()
 	{

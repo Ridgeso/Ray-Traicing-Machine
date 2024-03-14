@@ -114,7 +114,7 @@ namespace RT::Vulkan
 
         createInfo.oldSwapchain = oldSwapchain == nullptr ? VK_NULL_HANDLE : oldSwapchain->swapChain;
 
-        RT_CORE_ASSERT(vkCreateSwapchainKHR(device->device, &createInfo, nullptr, &swapChain) != VK_SUCCESS, "failed to create swap chain!");
+        RT_CORE_ASSERT(vkCreateSwapchainKHR(device->device, &createInfo, nullptr, &swapChain) == VK_SUCCESS, "failed to create swap chain!");
 
         // we only specified a minimum number of images in the swap chain, so the implementation is
         // allowed to create a swap chain with more. That's why we'll first query the final number of
@@ -209,7 +209,7 @@ namespace RT::Vulkan
         renderPassInfo.dependencyCount = 1;
         renderPassInfo.pDependencies = &dependency;
 
-        RT_CORE_ASSERT(vkCreateRenderPass(device->device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS, "failed to create render pass!");
+        RT_CORE_ASSERT(vkCreateRenderPass(device->device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS, "failed to create render pass!");
     }
 
     void Swapchain::createDepthResources()
@@ -257,7 +257,7 @@ namespace RT::Vulkan
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
 
-            RT_CORE_ASSERT(vkCreateImageView(device->device, &viewInfo, nullptr, &depthImageViews[i]) != VK_SUCCESS, "failed to create texture image view!");
+            RT_CORE_ASSERT(vkCreateImageView(device->device, &viewInfo, nullptr, &depthImageViews[i]) == VK_SUCCESS, "failed to create texture image view!");
         }
     }
 
@@ -282,7 +282,7 @@ namespace RT::Vulkan
                 device->device,
                 &framebufferInfo,
                 nullptr,
-                &swapChainFramebuffers[i]) != VK_SUCCESS,
+                &swapChainFramebuffers[i]) == VK_SUCCESS,
                 "failed to create framebuffer!");
         }
     }
@@ -307,7 +307,7 @@ namespace RT::Vulkan
                 VK_SUCCESS ||
                 vkCreateSemaphore(device->device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) !=
                 VK_SUCCESS ||
-                vkCreateFence(device->device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS,
+                vkCreateFence(device->device, &fenceInfo, nullptr, &inFlightFences[i]) == VK_SUCCESS,
                 "failed to create synchronization objects for a frame!");
         }
     }
@@ -428,8 +428,7 @@ namespace RT::Vulkan
         submitInfo.pSignalSemaphores = signalSemaphores;
 
         vkResetFences(device->device, 1, &inFlightFences[currentFrame]);
-        RT_CORE_ASSERT(vkQueueSubmit(device->graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) !=
-            VK_SUCCESS, "failed to submit draw command buffer!");
+        RT_CORE_ASSERT(vkQueueSubmit(device->graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) == VK_SUCCESS, "failed to submit draw command buffer!");
 
         VkPresentInfoKHR presentInfo = {};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

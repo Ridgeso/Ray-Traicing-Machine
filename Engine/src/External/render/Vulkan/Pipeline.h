@@ -30,7 +30,7 @@ namespace RT::Vulkan
 	{
     public:
         Pipeline(
-            Device& device,
+            Device* device,
             const std::string& vertFilepath,
             const std::string& fragFilepath,
             const PipelineConfigInfo& configInfo);
@@ -43,8 +43,8 @@ namespace RT::Vulkan
         void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
         static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height);
 
-    private:
-        Device& device;
+    //private:
+        Device* device;
         VkPipeline graphicsPipeline;
         VkShaderModule vertShaderModule;
         VkShaderModule fragShaderModule;
