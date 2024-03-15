@@ -88,12 +88,12 @@ namespace RT::Vulkan
 		//{
 		//	RT_LOG_ERROR("[Vulkan] VkResult = {}", result);
 		//}
-		//RT_CORE_ASSERT(result >= VK_SUCCESS, "[Vulkan] Required immediate abort VkResult = {}", result)
+		//RT_CORE_ASSERT(result >= VK_SUCCESS, "[Vulkan] Required immediate abort VkResult = {}", result);
 	}
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 	{
-		RT_LOG_INFO("[Vulkan] ERR: {}", pCallbackData->pMessage);
+		RT_LOG_ERROR("[Vulkan] ERR: {}", pCallbackData->pMessage);
 		return VK_FALSE;
 	}
 
