@@ -11,8 +11,13 @@ namespace RT::Vulkan
     class Swapchain
     {
     public:
-        Swapchain(Device& device, const VkExtent2D windowExtent);
+        Swapchain(const VkExtent2D windowExtent);
         ~Swapchain() = default;
+
+        Swapchain(const Swapchain&) = delete;
+        Swapchain(Swapchain&&) = delete;
+        Swapchain& operator=(const Swapchain&) = delete;
+        Swapchain&& operator=(Swapchain&&) = delete;
         
         void init();
         void shutdown();
@@ -50,7 +55,6 @@ namespace RT::Vulkan
         VkSwapchainKHR swapChain = {};
         VkRenderPass renderPass = {};
         std::vector<VkFramebuffer> swapChainFramebuffers = {};
-        Device& device;
 
         VkFormat swapChainImageFormat = {};
         VkFormat swapChainDepthFormat = {};

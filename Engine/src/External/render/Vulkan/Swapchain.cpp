@@ -4,8 +4,8 @@
 namespace RT::Vulkan
 {
 
-    Swapchain::Swapchain(Device& device, const VkExtent2D windowExtent)
-        : device{device}, windowExtent{windowExtent}
+    Swapchain::Swapchain(const VkExtent2D windowExtent)
+        : windowExtent{windowExtent}
     {
     }
 
@@ -21,51 +21,54 @@ namespace RT::Vulkan
 
     void Swapchain::shutdown()
     {
+        const auto device = DeviceInstance.getDevice();
+
         for (auto imageView : swapChainImageViews)
         {
-            vkDestroyImageView(device.getDevice(), imageView, nullptr);
+            vkDestroyImageView(device, imageView, nullptr);
         }
         swapChainImageViews.clear();
 
         if (swapChain != nullptr)
         {
-            vkDestroySwapchainKHR(device.getDevice(), swapChain, nullptr);
+            vkDestroySwapchainKHR(device, swapChain, nullptr);
             swapChain = nullptr;
         }
 
         for (int i = 0; i < depthImages.size(); i++)
         {
-            vkDestroyImageView(device.getDevice(), depthImageViews[i], nullptr);
-            vkDestroyImage(device.getDevice(), depthImages[i], nullptr);
-            vkFreeMemory(device.getDevice(), depthImageMemorys[i], nullptr);
+            vkDestroyImageView(device, depthImageViews[i], nullptr);
+            vkDestroyImage(device, depthImages[i], nullptr);
+            vkFreeMemory(device, depthImageMemorys[i], nullptr);
         }
 
         for (auto framebuffer : swapChainFramebuffers)
         {
-            vkDestroyFramebuffer(device.getDevice(), framebuffer, nullptr);
+            vkDestroyFramebuffer(device, framebuffer, nullptr);
         }
 
-        vkDestroyRenderPass(device.getDevice(), renderPass, nullptr);
+        vkDestroyRenderPass(device, renderPass, nullptr);
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
-            vkDestroySemaphore(device.getDevice(), renderFinishedSemaphores[i], nullptr);
-            vkDestroySemaphore(device.getDevice(), imageAvailableSemaphores[i], nullptr);
-            vkDestroyFence(device.getDevice(), inFlightFences[i], nullptr);
+            vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+            vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+            vkDestroyFence(device, inFlightFences[i], nullptr);
         }
     }
 
     VkResult Swapchain::acquireNextImage(uint32_t& imageIndex)
     {
+        const auto device = DeviceInstance.getDevice();
         vkWaitForFences(
-            device.getDevice(),
+            device,
             1,
             &inFlightFences[currentFrame],
             VK_TRUE,
             std::numeric_limits<uint64_t>::max());
 
         return vkAcquireNextImageKHR(
-            device.getDevice(),
+            device,
             swapChain,
             std::numeric_limits<uint64_t>::max(),
             imageAvailableSemaphores[currentFrame],
@@ -75,9 +78,11 @@ namespace RT::Vulkan
 
     VkResult Swapchain::submitCommandBuffers(const VkCommandBuffer& buffers, uint32_t& imageIndex)
     {
+        const auto& deviceInstance = DeviceInstance;
+
         if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
         {
-            vkWaitForFences(device.getDevice(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+            vkWaitForFences(deviceInstance.getDevice(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
         }
         imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 
@@ -97,9 +102,9 @@ namespace RT::Vulkan
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores.data();
 
-        vkResetFences(device.getDevice(), 1, &inFlightFences[currentFrame]);
+        vkResetFences(deviceInstance.getDevice(), 1, &inFlightFences[currentFrame]);
         RT_CORE_ASSERT(
-            vkQueueSubmit(device.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) == VK_SUCCESS,
+            vkQueueSubmit(deviceInstance.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) == VK_SUCCESS,
             "failed to submit draw command buffer!");
 
         auto presentInfo = VkPresentInfoKHR{};
@@ -114,12 +119,14 @@ namespace RT::Vulkan
         presentInfo.pImageIndices = &imageIndex;
 
         incrementFrameCounter();
-        return vkQueuePresentKHR(device.getPresentQueue(), &presentInfo);
+        return vkQueuePresentKHR(deviceInstance.getPresentQueue(), &presentInfo);
     }
 
     void Swapchain::createSwapChain()
     {
-        auto swapChainSupport = device.getSwapChainSupportDetails();
+        const auto& deviceInstance = DeviceInstance;
+
+        auto swapChainSupport = deviceInstance.getSwapChainSupportDetails();
 
         auto surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
         auto presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
@@ -134,7 +141,7 @@ namespace RT::Vulkan
 
         auto createInfo = VkSwapchainCreateInfoKHR{};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = device.getSurface();
+        createInfo.surface = deviceInstance.getSurface();
 
         createInfo.minImageCount = imageCount;
         createInfo.imageFormat = surfaceFormat.format;
@@ -143,7 +150,7 @@ namespace RT::Vulkan
         createInfo.imageArrayLayers = 1;
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        auto indices = device.getQueueFamilyIndices();
+        auto indices = deviceInstance.getQueueFamilyIndices();
         auto queueFamilyIndices = std::vector<uint32_t>{ indices.graphicsFamily, indices.presentFamily };
 
         if (indices.graphicsFamily != indices.presentFamily)
@@ -168,12 +175,12 @@ namespace RT::Vulkan
         createInfo.oldSwapchain = VK_NULL_HANDLE;
 
         RT_CORE_ASSERT(
-            vkCreateSwapchainKHR(device.getDevice(), &createInfo, nullptr, &swapChain) == VK_SUCCESS,
+            vkCreateSwapchainKHR(deviceInstance.getDevice(), &createInfo, nullptr, &swapChain) == VK_SUCCESS,
             "failed to create swap chain!");
 
-        vkGetSwapchainImagesKHR(device.getDevice(), swapChain, &imageCount, nullptr);
+        vkGetSwapchainImagesKHR(deviceInstance.getDevice(), swapChain, &imageCount, nullptr);
         swapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(device.getDevice(), swapChain, &imageCount, swapChainImages.data());
+        vkGetSwapchainImagesKHR(deviceInstance.getDevice(), swapChain, &imageCount, swapChainImages.data());
 
         swapChainImageFormat = surfaceFormat.format;
         swapChainExtent = extent;
@@ -196,7 +203,7 @@ namespace RT::Vulkan
             viewInfo.subresourceRange.layerCount = 1;
 
             RT_CORE_ASSERT(
-                vkCreateImageView(device.getDevice(), &viewInfo, nullptr, &swapChainImageViews[i]) == VK_SUCCESS,
+                vkCreateImageView(DeviceInstance.getDevice(), &viewInfo, nullptr, &swapChainImageViews[i]) == VK_SUCCESS,
                 "failed to create texture image view!");
         }
     }
@@ -259,7 +266,7 @@ namespace RT::Vulkan
         renderPassInfo.pDependencies = &dependency;
 
         RT_CORE_ASSERT(
-            vkCreateRenderPass(device.getDevice(), &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS,
+            vkCreateRenderPass(DeviceInstance.getDevice(), &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS,
             "failed to create render pass!");
     }
 
@@ -290,7 +297,7 @@ namespace RT::Vulkan
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.flags = 0;
 
-            device.createImageWithInfo(
+            DeviceInstance.createImageWithInfo(
                 imageInfo,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                 depthImages[i],
@@ -308,7 +315,7 @@ namespace RT::Vulkan
             viewInfo.subresourceRange.layerCount = 1;
 
             RT_CORE_ASSERT(
-                vkCreateImageView(device.getDevice(), &viewInfo, nullptr, &depthImageViews[i]) == VK_SUCCESS,
+                vkCreateImageView(DeviceInstance.getDevice(), &viewInfo, nullptr, &depthImageViews[i]) == VK_SUCCESS,
                 "failed to create texture image view!");
         }
     }
@@ -331,7 +338,7 @@ namespace RT::Vulkan
 
             RT_CORE_ASSERT(
                 vkCreateFramebuffer(
-                    device.getDevice(),
+                    DeviceInstance.getDevice(),
                     &framebufferInfo,
                     nullptr,
                     &swapChainFramebuffers[i]) == VK_SUCCESS,
@@ -353,9 +360,9 @@ namespace RT::Vulkan
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
             RT_CORE_ASSERT(
-                vkCreateSemaphore(device.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-                vkCreateSemaphore(device.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
-                vkCreateFence(device.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) == VK_SUCCESS,
+                vkCreateSemaphore(DeviceInstance.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+                vkCreateSemaphore(DeviceInstance.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
+                vkCreateFence(DeviceInstance.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) == VK_SUCCESS,
                 "failed to create synchronization objects for a frame!");
         }
     }
@@ -381,7 +388,7 @@ namespace RT::Vulkan
 
     VkFormat Swapchain::findDepthFormat()
     {
-        return device.findSupportedFormat(
+        return DeviceInstance.findSupportedFormat(
             { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
             VK_IMAGE_TILING_OPTIMAL,
             VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);

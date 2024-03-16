@@ -1,19 +1,10 @@
 #include "Pipeline.h"
 #include "Engine/Core/Assert.h"
 
+#include "VulkanBuffer.h"
 
 namespace RT::Vulkan
 {
-
-    Pipeline::Pipeline(Device& device)
-        : device{device}
-    {
-    }
-
-    Pipeline::~Pipeline()
-    {
-        shutdown();
-    }
 
     void Pipeline::init(const std::string& vertFilepath, const std::string& fragFilepath, const PipelineConfigInfo& configInfo)
     {
@@ -22,12 +13,18 @@ namespace RT::Vulkan
 
     void Pipeline::shutdown()
     {
-        vkDestroyShaderModule(device.getDevice(), vertShaderModule, nullptr);
-        vkDestroyShaderModule(device.getDevice(), fragShaderModule, nullptr);
-        vkDestroyPipeline(device.getDevice(), graphicsPipeline, nullptr);
+        auto device = DeviceInstance.getDevice();
+        vkDestroyShaderModule(device, vertShaderModule, nullptr);
+        vkDestroyShaderModule(device, fragShaderModule, nullptr);
+        vkDestroyPipeline(device, graphicsPipeline, nullptr);
     }
 
-    void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, const glm::uvec2 size)
+    void Pipeline::bind(const VkCommandBuffer commandBuffer) const
+    {
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+    }
+
+    void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, const VkExtent2D size)
     {
         configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -35,13 +32,13 @@ namespace RT::Vulkan
 
         configInfo.viewport.x = 0.0f;
         configInfo.viewport.y = 0.0f;
-        configInfo.viewport.width = size.x;
-        configInfo.viewport.height = size.y;
+        configInfo.viewport.width = static_cast<float>(size.width);
+        configInfo.viewport.height = static_cast<float>(size.height);
         configInfo.viewport.minDepth = 0.0f;
         configInfo.viewport.maxDepth = 1.0f;
 
         configInfo.scissors.offset = { 0, 0 };
-        configInfo.scissors.extent = { size.x, size.y };
+        configInfo.scissors.extent = size;
 
         configInfo.viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         configInfo.viewportInfo.viewportCount = 1;
@@ -136,13 +133,14 @@ namespace RT::Vulkan
         shaderStages[1].pNext = nullptr;
         shaderStages[1].pSpecializationInfo = nullptr;
 
+        auto attriDesc = Vertex::getAttributeDescriptions();
+        auto bindDesc = Vertex::getBindingDescriptions();
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexAttributeDescriptionCount = 0;
-        vertexInputInfo.vertexBindingDescriptionCount = 0;
-        vertexInputInfo.pVertexAttributeDescriptions = nullptr;
-        vertexInputInfo.pVertexBindingDescriptions = nullptr;
-
+        vertexInputInfo.vertexAttributeDescriptionCount = attriDesc.size();
+        vertexInputInfo.vertexBindingDescriptionCount = bindDesc.size();
+        vertexInputInfo.pVertexAttributeDescriptions = attriDesc.data();
+        vertexInputInfo.pVertexBindingDescriptions = bindDesc.data();
 
         VkGraphicsPipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -166,7 +164,7 @@ namespace RT::Vulkan
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
         RT_CORE_ASSERT(vkCreateGraphicsPipelines(
-            device.getDevice(),
+            DeviceInstance.getDevice(),
             VK_NULL_HANDLE,
             1,
             &pipelineInfo,
@@ -182,7 +180,7 @@ namespace RT::Vulkan
         createInfo.codeSize = code.size();
         createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-        RT_CORE_ASSERT(vkCreateShaderModule(device.getDevice(), &createInfo, nullptr, shaderModule) == VK_SUCCESS, "failed to create shader module");
+        RT_CORE_ASSERT(vkCreateShaderModule(DeviceInstance.getDevice(), &createInfo, nullptr, shaderModule) == VK_SUCCESS, "failed to create shader module");
     }
 
     std::vector<char> Pipeline::readFile(const std::string& filepath)

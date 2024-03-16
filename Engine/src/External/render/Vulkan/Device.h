@@ -13,21 +13,33 @@ namespace RT::Vulkan
     class Device
     {
     public:
-        Device() = default;
         ~Device() = default;
+        
+        Device(const Device&) = delete;
+        Device(Device&&) = delete;
+        Device& operator=(const Device&) = delete;
+        Device&& operator=(Device&&) = delete;
+
+        static Device& getDeviceInstance() { return deviceInstance; }
 
         void init(Window& window);
         void shutdown();
 
         void createImageWithInfo(
             const VkImageCreateInfo& imageInfo,
-            VkMemoryPropertyFlags properties,
+            const VkMemoryPropertyFlags properties,
             VkImage& image,
             VkDeviceMemory& imageMemory) const;
         VkFormat findSupportedFormat(
             const std::vector<VkFormat>& candidates,
-            VkImageTiling tiling,
+            const VkImageTiling tiling,
             VkFormatFeatureFlags features) const;
+        void createBuffer(
+            const VkDeviceSize size,
+            const VkBufferUsageFlags usage,
+            const VkMemoryPropertyFlags properties,
+            VkBuffer& buffer,
+            VkDeviceMemory& bufferMemory) const;
 
         VkDevice getDevice() const { return device; }
         VkSurfaceKHR getSurface() const { return surface; }
@@ -39,7 +51,10 @@ namespace RT::Vulkan
         { return swapChainSupportDetails; }
         Utils::QueueFamilyIndices getQueueFamilyIndices() const { return queueFamilyIndices; }
 
+        friend static Device createDeviceInstance();
     private:
+        Device() = default;
+
         void createInstance();
         void createSurface(Window& window);
         void pickPhysicalDevice();
@@ -69,6 +84,12 @@ namespace RT::Vulkan
         Utils::QueueFamilyIndices queueFamilyIndices = {};
 
         static constexpr std::array<const char*, 1> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+
+        static Device deviceInstance;
     };
+
+    static Device createDeviceInstance();
+
+    #define DeviceInstance Device::getDeviceInstance()
 
 }

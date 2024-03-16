@@ -103,8 +103,9 @@ namespace RT
 	Application::~Application()
 	{
 		mainWindow->shutDown();
-		renderer->shutDown();
 		rtShader->destroy();
+		screenBuff.reset();
+		renderer->shutDown();
 	}
 
 	void Application::run()

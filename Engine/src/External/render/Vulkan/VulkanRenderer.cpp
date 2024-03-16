@@ -22,13 +22,26 @@ namespace RT::Vulkan
 		auto size = window.getSize();
 		extent = VkExtent2D{ (uint32_t)size.x, (uint32_t)size.y };
 
-		device = makeLocal<Device>();
-		swapchain = makeLocal<Swapchain>(*device.get(), extent);
-		pipeline = std::make_unique<Pipeline>(*device.get());
+		auto& deviceInstance = DeviceInstance;
 
-		device->init(window);
+		swapchain = makeLocal<Swapchain>(extent);
+		pipeline = std::make_unique<Pipeline>();
+
+		deviceInstance.init(window);
 		swapchain->init();
 		
+		auto triangleVert = std::vector<Vertex>{
+			{{0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}},
+			{{0.5f, -0.5f},  {0.0f, 1.0f, 0.0f}},
+			{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+			{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+			{{-0.5f, 0.5f},  {0.0f, 0.0f, 1.0f}},
+			{{-0.5f, -0.5f}, {1.0f, 1.0f, 0.0f}}
+		};
+		vertexBuffer = makeLocal<VulkanVertexBuffer>(
+			static_cast<uint32_t>(triangleVert.size()),
+			triangleVert.data());
+
 		auto pipelineLayoutInfo = VkPipelineLayoutCreateInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 0;
@@ -37,12 +50,11 @@ namespace RT::Vulkan
 		pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
 		RT_CORE_ASSERT(
-			vkCreatePipelineLayout(device->getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) == VK_SUCCESS,
+			vkCreatePipelineLayout(deviceInstance.getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) == VK_SUCCESS,
 			"Could not create pipeline Layout");
 		
 		auto pipelineConfig = PipelineConfigInfo{};
-		auto windowExtent = glm::uvec2(swapchain->getWindowExtent().width, swapchain->getWindowExtent().height);
-		Pipeline::defaultPipelineConfigInfo(pipelineConfig, windowExtent);
+		Pipeline::defaultPipelineConfigInfo(pipelineConfig, swapchain->getWindowExtent());
 		pipelineConfig.renderPass = swapchain->getRenderPass();
 		pipelineConfig.pipelineLayout = pipelineLayout;
 
@@ -56,10 +68,10 @@ namespace RT::Vulkan
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = device->getCommandPool();
+		allocInfo.commandPool = deviceInstance.getCommandPool();
 		allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
 
-		RT_CORE_ASSERT(vkAllocateCommandBuffers(device->getDevice(), &allocInfo, commandBuffers.data()) == VK_SUCCESS, "failed to allocate command buffers!");
+		RT_CORE_ASSERT(vkAllocateCommandBuffers(deviceInstance.getDevice(), &allocInfo, commandBuffers.data()) == VK_SUCCESS, "failed to allocate command buffers!");
 
 		for (int32_t i = 0; i < commandBuffers.size(); i++)
 		{
@@ -84,8 +96,9 @@ namespace RT::Vulkan
 
 			vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getGraphicsPipeline());
-			vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+			pipeline->bind(commandBuffers[i]);
+			vertexBuffer->bind(commandBuffers[i]);
+			vertexBuffer->draw(commandBuffers[i]);
 
 			vkCmdEndRenderPass(commandBuffers[i]);
 			RT_CORE_ASSERT(vkEndCommandBuffer(commandBuffers[i]) == VK_SUCCESS, "failed to record command buffer");
@@ -94,20 +107,23 @@ namespace RT::Vulkan
 
 	void VulkanRenderer::shutDown()
 	{
-		vkDeviceWaitIdle(device->getDevice());
+		auto& deviceInstance = DeviceInstance;
 
-		vkDestroyPipelineLayout(device->getDevice(), pipelineLayout, nullptr);
-
+		vkDeviceWaitIdle(deviceInstance.getDevice());
+		vkDestroyPipelineLayout(deviceInstance.getDevice(), pipelineLayout, nullptr);
 		vkFreeCommandBuffers(
-			device->getDevice(),
-			device->getCommandPool(),
+			deviceInstance.getDevice(),
+			deviceInstance.getCommandPool(),
 			static_cast<uint32_t>(commandBuffers.size()),
 			commandBuffers.data());
 		commandBuffers.clear();
 
 		pipeline->shutdown();
+		
+		vertexBuffer.reset();
+
 		swapchain->shutdown();
-		device->shutdown();
+		deviceInstance.shutdown();
 	}
 
 	void VulkanRenderer::render(const Camera& camera, const Shader& shader, const VertexBuffer& vbuffer, const Scene& scene)

@@ -9,6 +9,8 @@
 
 namespace RT::Vulkan
 {
+    
+    Device Device::deviceInstance = createDeviceInstance();
 
     void Device::init(Window& window)
     {
@@ -32,7 +34,7 @@ namespace RT::Vulkan
 
     void Device::createImageWithInfo(
         const VkImageCreateInfo& imageInfo,
-        VkMemoryPropertyFlags properties,
+        const VkMemoryPropertyFlags properties,
         VkImage& image,
         VkDeviceMemory& imageMemory) const
     {
@@ -52,7 +54,7 @@ namespace RT::Vulkan
 
     VkFormat Device::findSupportedFormat(
         const std::vector<VkFormat>& candidates,
-        VkImageTiling tiling,
+        const VkImageTiling tiling,
         VkFormatFeatureFlags features) const
     {
         for (auto format : candidates)
@@ -67,6 +69,43 @@ namespace RT::Vulkan
             }
         }
         RT_CORE_ASSERT(false, "failed to find supported format!");
+    }
+
+    void Device::createBuffer(
+        const VkDeviceSize size,
+        const VkBufferUsageFlags usage,
+        const VkMemoryPropertyFlags properties,
+        VkBuffer& buffer,
+        VkDeviceMemory& bufferMemory) const
+    {
+        auto bufferInfo = VkBufferCreateInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = size;
+        bufferInfo.usage = usage;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        RT_CORE_ASSERT(
+            vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) == VK_SUCCESS,
+            "failed to create vertex buffer");
+
+        auto memRequirements = VkMemoryRequirements{};
+        vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
+
+        auto allocInfo = VkMemoryAllocateInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+        RT_CORE_ASSERT(
+            vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) == VK_SUCCESS,
+            "failed to allocate vertex buffer");
+
+        vkBindBufferMemory(device, buffer, bufferMemory, 0);
+    }
+
+    Device createDeviceInstance()
+    {
+        return Device();
     }
 
     void Device::createInstance()

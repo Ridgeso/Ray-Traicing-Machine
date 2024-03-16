@@ -29,8 +29,13 @@ namespace RT::Vulkan
 	class Pipeline
 	{
     public:
-        Pipeline(Device& device);
-        ~Pipeline();
+        Pipeline() = default;
+        ~Pipeline() = default;
+
+        Pipeline(const Pipeline&) = delete;
+        Pipeline(Pipeline&&) = delete;
+        Pipeline& operator=(const Pipeline&) = delete;
+        Pipeline&& operator=(Pipeline&&) = delete;
 
         void init(
             const std::string& vertFilepath,
@@ -39,8 +44,9 @@ namespace RT::Vulkan
         void shutdown();
         
         VkPipeline getGraphicsPipeline() const { return graphicsPipeline; }
-        
-        static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, const glm::uvec2 size);
+        void bind(const VkCommandBuffer commandBuffer) const;
+
+        static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, const VkExtent2D size);
 
     private:
         void createGraphicsPipeline(
@@ -51,7 +57,6 @@ namespace RT::Vulkan
         static std::vector<char> readFile(const std::string& filepath);
 
     private:
-        Device& device;
         VkPipeline graphicsPipeline = {};
         VkShaderModule vertShaderModule = {};
         VkShaderModule fragShaderModule = {};
