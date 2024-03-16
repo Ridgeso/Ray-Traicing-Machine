@@ -4,66 +4,71 @@
 
 #include <vulkan/vulkan.h>
 
-#include "External/window/GlfwWindow/GlfwWindow.h"
+#include "Engine/Window/Window.h"
+#include "utils/Utils.h"
 
 namespace RT::Vulkan
 {
 
-    struct SwapChainSupportDetails;
-
-    struct QueueFamilyIndices
-    {
-        uint32_t graphicsFamily;
-        uint32_t presentFamily;
-        bool graphicsFamilyHasValue = false;
-        bool presentFamilyHasValue = false;
-    };
-
     class Device
     {
     public:
-        Device(Window* window);
-        ~Device();
-        void createInstance();
-        void setupDebugMessenger();
-        void createSurface();
-        void pickPhysicalDevice();
-        void createLogicalDevice();
-        void createCommandPool();
-        bool checkValidationLayerSupport();
-        std::vector<const char*> getRequiredExtensions();
-        void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-        void hasGflwRequiredInstanceExtensions();
-        bool isDeviceSuitable(VkPhysicalDevice device);
-        QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-        bool checkDeviceExtensionSupport(VkPhysicalDevice device);
-        SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
-        VkFormat findSupportedFormat(
-            const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+        Device() = default;
+        ~Device() = default;
+
+        void init(Window& window);
+        void shutdown();
+
         void createImageWithInfo(
             const VkImageCreateInfo& imageInfo,
             VkMemoryPropertyFlags properties,
             VkImage& image,
-            VkDeviceMemory& imageMemory);
-        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+            VkDeviceMemory& imageMemory) const;
+        VkFormat findSupportedFormat(
+            const std::vector<VkFormat>& candidates,
+            VkImageTiling tiling,
+            VkFormatFeatureFlags features) const;
 
-    //private:
-        VkInstance instance{};
-        VkDebugUtilsMessengerEXT debugMessenger{};
+        VkDevice getDevice() const { return device; }
+        VkSurfaceKHR getSurface() const { return surface; }
+        VkQueue getGraphicsQueue() const { return graphicsQueue; }
+        VkQueue getPresentQueue() const { return presentQueue; }
+        VkCommandPool getCommandPool() const { return commandPool; }
+        
+        const Utils::SwapChainSupportDetails& getSwapChainSupportDetails() const
+        { return swapChainSupportDetails; }
+        Utils::QueueFamilyIndices getQueueFamilyIndices() const { return queueFamilyIndices; }
+
+    private:
+        void createInstance();
+        void createSurface(Window& window);
+        void pickPhysicalDevice();
+        void createLogicalDevice();
+        void createCommandPool();
+
+        void validateRequiredInstanceExtensions() const;
+        bool isDeviceSuitable(VkPhysicalDevice phyDev);
+        Utils::QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phyDev) const;
+        Utils::SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice phyDev);
+        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
+
+        static bool checkDeviceExtensionSupport(VkPhysicalDevice phyDev);
+
+    private:
+        VkDevice device = {};
+        VkInstance instance = {};
+        VkSurfaceKHR surface = {};
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-        Window* window;
-        VkCommandPool commandPool{};
 
-        VkDevice device;
-        VkSurfaceKHR surface;
-        VkQueue graphicsQueue;
-        VkQueue presentQueue;
+        VkQueue graphicsQueue = {};
+        VkQueue presentQueue = {};
+        VkCommandPool commandPool = {};
+        VkPhysicalDeviceProperties properties = {};
 
-        VkPhysicalDeviceProperties properties;
+        Utils::SwapChainSupportDetails swapChainSupportDetails = {};
+        Utils::QueueFamilyIndices queueFamilyIndices = {};
 
-        static constexpr std::array<const char*, 1> validationLayers = { "VK_LAYER_KHRONOS_validation" };
         static constexpr std::array<const char*, 1> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-        static constexpr bool enableValidationLayers = true;
     };
 
 }

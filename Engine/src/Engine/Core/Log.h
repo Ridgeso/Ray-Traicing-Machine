@@ -37,17 +37,17 @@ namespace RT::Core
 }
 
 // Engine Logs Macros
-#define RT_LOG_CRITICAL(...) ::RT::Core::Log::logBase<spdlog::level::critical>(::RT::Core::Log::getEngineLogger(), Utils::FileInfo(), __VA_ARGS__)
-#define RT_LOG_ERROR(...)    ::RT::Core::Log::logBase<spdlog::level::err>(::RT::Core::Log::getEngineLogger(), Utils::FileInfo(), __VA_ARGS__)
-#define RT_LOG_WARN(...)     ::RT::Core::Log::logBase<spdlog::level::warn>(::RT::Core::Log::getEngineLogger(), Utils::FileInfo(), __VA_ARGS__)
-#define RT_LOG_INFO(...)     ::RT::Core::Log::logBase<spdlog::level::info>(::RT::Core::Log::getEngineLogger(), Utils::FileInfo(), __VA_ARGS__)
-#define RT_LOG_DEBUG(...)    ::RT::Core::Log::logBase<spdlog::level::debug>(::RT::Core::Log::getEngineLogger(), Utils::FileInfo(), __VA_ARGS__)
-#define RT_LOG_TRACE(...)    ::RT::Core::Log::logBase<spdlog::level::trace>(::RT::Core::Log::getEngineLogger(), Utils::FileInfo(), __VA_ARGS__)
+#define RT_LOG_CRITICAL(...) ::RT::Core::Log::logBase<spdlog::level::critical>(::RT::Core::Log::getEngineLogger(), ::RT::Utils::FileInfo(), __VA_ARGS__)
+#define RT_LOG_ERROR(...)    ::RT::Core::Log::logBase<spdlog::level::err>(::RT::Core::Log::getEngineLogger(), ::RT::Utils::FileInfo(), __VA_ARGS__)
+#define RT_LOG_WARN(...)     ::RT::Core::Log::logBase<spdlog::level::warn>(::RT::Core::Log::getEngineLogger(), ::RT::Utils::FileInfo(), __VA_ARGS__)
+#define RT_LOG_INFO(...)     ::RT::Core::Log::logBase<spdlog::level::info>(::RT::Core::Log::getEngineLogger(), ::RT::Utils::FileInfo(), __VA_ARGS__)
+#define RT_LOG_DEBUG(...)    ::RT::Core::Log::logBase<spdlog::level::debug>(::RT::Core::Log::getEngineLogger(), ::RT::Utils::FileInfo(), __VA_ARGS__)
+#define RT_LOG_TRACE(...)    ::RT::Core::Log::logBase<spdlog::level::trace>(::RT::Core::Log::getEngineLogger(), ::RT::Utils::FileInfo(), __VA_ARGS__)
 
 // Clients Logs Macros
-#define LOG_CRITICAL(...)    ::RT::Core::Log::logBase<spdlog::level::critical>(::RT::Core::Log::getClientLogger(), Utils::FileInfo(), __VA_ARGS__)
-#define LOG_ERROR(...)       ::RT::Core::Log::logBase<spdlog::level::err>(::RT::Core::Log::getClientLogger(), Utils::FileInfo(), __VA_ARGS__)
-#define LOG_WARN(...)        ::RT::Core::Log::logBase<spdlog::level::warn>(::RT::Core::Log::getClientLogger(), Utils::FileInfo(), __VA_ARGS__)
-#define LOG_INFO(...)        ::RT::Core::Log::logBase<spdlog::level::info>(::RT::Core::Log::getClientLogger(), Utils::FileInfo(), __VA_ARGS__)
-#define LOG_DEBUG(...)       ::RT::Core::Log::logBase<spdlog::level::debug>(::RT::Core::Log::getClientLogger(), Utils::FileInfo(), __VA_ARGS__)
-#define LOG_TRACE(...)       ::RT::Core::Log::logBase<spdlog::level::trace>(::RT::Core::Log::getClientLogger(), Utils::FileInfo(), __VA_ARGS__)
+#define LOG_CRITICAL(...)    ::RT::Core::Log::logBase<spdlog::level::critical>(::RT::Core::Log::getClientLogger(), ::RT::Utils::FileInfo(), __VA_ARGS__)
+#define LOG_ERROR(...)       ::RT::Core::Log::logBase<spdlog::level::err>(::RT::Core::Log::getClientLogger(), ::RT::Utils::FileInfo(), __VA_ARGS__)
+#define LOG_WARN(...)        ::RT::Core::Log::logBase<spdlog::level::warn>(::RT::Core::Log::getClientLogger(), ::RT::Utils::FileInfo(), __VA_ARGS__)
+#define LOG_INFO(...)        ::RT::Core::Log::logBase<spdlog::level::info>(::RT::Core::Log::getClientLogger(), ::RT::Utils::FileInfo(), __VA_ARGS__)
+#define LOG_DEBUG(...)       ::RT::Core::Log::logBase<spdlog::level::debug>(::RT::Core::Log::getClientLogger(), ::RT::Utils::FileInfo(), __VA_ARGS__)
+#define LOG_TRACE(...)       ::RT::Core::Log::logBase<spdlog::level::trace>(::RT::Core::Log::getClientLogger(), ::RT::Utils::FileInfo(), __VA_ARGS__)

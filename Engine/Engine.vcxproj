@@ -67,6 +67,7 @@
     <ClInclude Include="src\External\render\Vulkan\Swapchain.h" />
     <ClInclude Include="src\External\render\Vulkan\Device.h" />
     <ClInclude Include="src\External\render\Vulkan\utils\Debug.h" />
+    <ClInclude Include="src\External\Render\Vulkan\utils\Utils.h" />
     <ClInclude Include="src\External\render\Vulkan\VulkanBuffer.h" />
     <ClInclude Include="src\External\render\Vulkan\VulkanFrameBuffer.h" />
     <ClInclude Include="src\External\render\Vulkan\VulkanRenderer.h" />

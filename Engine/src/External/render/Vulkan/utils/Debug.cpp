@@ -7,7 +7,7 @@
 namespace RT::Vulkan
 {
 
-	VkDebugUtilsMessengerEXT debugMessenger{};
+	VkDebugUtilsMessengerEXT GlobDebugMessenger{};
 	
 	bool checkValidationLayerSupport()
 	{
@@ -17,7 +17,7 @@ namespace RT::Vulkan
 		auto availableLayers = std::vector<VkLayerProperties>(layerCount);
 		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-		for (const char* layerName : ValidationLayers)
+		for (auto layerName : ValidationLayers)
 		{
 			bool layerFound = false;
 
@@ -67,17 +67,16 @@ namespace RT::Vulkan
 
 	void destroyDebugUtilsMessengerEXT(
 		VkInstance instance,
-		VkDebugUtilsMessengerEXT debugMessenger,
 		const VkAllocationCallbacks* pAllocator)
 	{
-		if constexpr (EnableValidationLayers)
+		if (EnableValidationLayers)
 		{
 			auto destroyValidation = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
 				instance,
 				"vkDestroyDebugUtilsMessengerEXT");
 			if (destroyValidation != nullptr)
 			{
-				destroyValidation(instance, debugMessenger, pAllocator);
+				destroyValidation(instance, GlobDebugMessenger, pAllocator);
 			}
 		}
 	}
@@ -100,7 +99,7 @@ namespace RT::Vulkan
 	VkDebugUtilsMessengerCreateInfoEXT populateDebugMessengerCreateInfo()
 	{
 		auto createInfo = VkDebugUtilsMessengerCreateInfoEXT{};
-		if constexpr (EnableValidationLayers)
+		if (EnableValidationLayers)
 		{
 			createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 			createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
@@ -114,30 +113,12 @@ namespace RT::Vulkan
 		return createInfo;
 	}
 
-	void enableDebugingForCreateInfo(VkInstanceCreateInfo& createInfo, VkDebugUtilsMessengerCreateInfoEXT& debugCreateInfo)
-	{
-		if constexpr (EnableValidationLayers)
-		{
-			createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.size());
-			createInfo.ppEnabledLayerNames = ValidationLayers.data();
-			createInfo.pNext = &debugCreateInfo;
-		}
-		else
-		{
-			createInfo.enabledLayerCount = 0;
-			createInfo.pNext = nullptr;
-		}
-	}
-
 	void setupDebugMessenger(VkInstance& instance)
 	{
-		if constexpr (EnableValidationLayers)
+		if (EnableValidationLayers)
 		{
 			auto createInfo = populateDebugMessengerCreateInfo();
-			if (createDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS)
-			{
-				throw std::runtime_error("failed to set up debug messenger!");
-			}
+			RT_CORE_ASSERT(createDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &GlobDebugMessenger) == VK_SUCCESS, "failed to set up debug messenger!");
 		}
 	}
 

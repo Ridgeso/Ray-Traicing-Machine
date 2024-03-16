@@ -203,6 +203,9 @@
     <ClInclude Include="src\External\render\Vulkan\Pipeline.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
+    <ClInclude Include="src\External\Render\Vulkan\utils\Utils.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini" />

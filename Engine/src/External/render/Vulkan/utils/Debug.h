@@ -20,10 +20,7 @@ namespace RT::Vulkan
         const VkAllocationCallbacks* pAllocator,
         VkDebugUtilsMessengerEXT* pDebugMessenger);
 
-    void destroyDebugUtilsMessengerEXT(
-        VkInstance instance,
-        VkDebugUtilsMessengerEXT debugMessenger,
-        const VkAllocationCallbacks* pAllocator);
+    void destroyDebugUtilsMessengerEXT(VkInstance instance, const VkAllocationCallbacks* pAllocator);
     
     void checkVkResultCallback(VkResult result);
 
@@ -35,9 +32,21 @@ namespace RT::Vulkan
 
     VkDebugUtilsMessengerCreateInfoEXT populateDebugMessengerCreateInfo();
 
-    void enableDebugingForCreateInfo(
-        VkInstanceCreateInfo& createInfo,
-        VkDebugUtilsMessengerCreateInfoEXT& debugCreateInfo);
+    template <typename CreateInfo>
+    void enableDebugingForCreateInfo(CreateInfo& createInfo, VkDebugUtilsMessengerCreateInfoEXT* debugCreateInfo = nullptr)
+    {
+        if (EnableValidationLayers)
+        {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.size());
+            createInfo.ppEnabledLayerNames = ValidationLayers.data();
+            createInfo.pNext = debugCreateInfo;
+        }
+        else
+        {
+            createInfo.enabledLayerCount = 0;
+            createInfo.pNext = nullptr;
+        }
+    }
 
     void setupDebugMessenger(VkInstance& instance);
 

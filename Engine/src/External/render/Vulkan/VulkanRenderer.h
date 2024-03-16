@@ -12,7 +12,7 @@ namespace RT::Vulkan
 	class VulkanRenderer : public Renderer
 	{
 	public:
-		VulkanRenderer() = default;
+		VulkanRenderer();
 		~VulkanRenderer() = default;
 
 		void init(const RenderSpecs& specs) final;
@@ -20,13 +20,13 @@ namespace RT::Vulkan
 
 		void render(const Camera& camera, const Shader& shader, const VertexBuffer& vbuffer, const Scene& scene) final;
 	private:
-		Local<Device> device;
-		Local<Swapchain> swapchain;
+		Local<Device> device = nullptr;
+		Local<Swapchain> swapchain = nullptr;
 
-		VkPipelineLayout pipelineLayout;
-		std::vector<VkCommandBuffer> commandBuffers;
-		Local<Pipeline> pipeline;
+		VkPipelineLayout pipelineLayout{};
+		std::vector<VkCommandBuffer> commandBuffers{};
+		Local<Pipeline> pipeline = nullptr;
 		
-		VkExtent2D extent;
+		VkExtent2D extent{};
 	};
 }

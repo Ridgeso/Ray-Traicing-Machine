@@ -12,15 +12,15 @@ namespace RT::Vulkan
         PipelineConfigInfo(const PipelineConfigInfo&) = delete;
         PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
 
-        VkViewport viewport;
-        VkRect2D scissors;
-        VkPipelineViewportStateCreateInfo viewportInfo;
-        VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
-        VkPipelineRasterizationStateCreateInfo rasterizationInfo;
-        VkPipelineMultisampleStateCreateInfo multisampleInfo;
-        VkPipelineColorBlendAttachmentState colorBlendAttachment;
-        VkPipelineColorBlendStateCreateInfo colorBlendInfo;
-        VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
+        VkViewport viewport = {};
+        VkRect2D scissors = {};
+        VkPipelineViewportStateCreateInfo viewportInfo = {};
+        VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo = {};
+        VkPipelineRasterizationStateCreateInfo rasterizationInfo = {};
+        VkPipelineMultisampleStateCreateInfo multisampleInfo = {};
+        VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
+        VkPipelineColorBlendStateCreateInfo colorBlendInfo = {};
+        VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
         VkPipelineLayout pipelineLayout = nullptr;
         VkRenderPass renderPass = nullptr;
         uint32_t subpass = 0;
@@ -29,26 +29,32 @@ namespace RT::Vulkan
 	class Pipeline
 	{
     public:
-        Pipeline(
-            Device* device,
+        Pipeline(Device& device);
+        ~Pipeline();
+
+        void init(
             const std::string& vertFilepath,
             const std::string& fragFilepath,
             const PipelineConfigInfo& configInfo);
-        ~Pipeline();
+        void shutdown();
+        
+        VkPipeline getGraphicsPipeline() const { return graphicsPipeline; }
+        
+        static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, const glm::uvec2 size);
+
+    private:
         void createGraphicsPipeline(
             const std::string& vertFilepath,
             const std::string& fragFilepath,
             const PipelineConfigInfo& configInfo);
-        std::vector<char> readFile(const std::string& filepath);
-        void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
-        static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, uint32_t width, uint32_t height);
+        void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule) const;
+        static std::vector<char> readFile(const std::string& filepath);
 
-    //private:
-        Device* device;
-        VkPipeline graphicsPipeline;
-        VkShaderModule vertShaderModule;
-        VkShaderModule fragShaderModule;
-
+    private:
+        Device& device;
+        VkPipeline graphicsPipeline = {};
+        VkShaderModule vertShaderModule = {};
+        VkShaderModule fragShaderModule = {};
 	};
 
 }
