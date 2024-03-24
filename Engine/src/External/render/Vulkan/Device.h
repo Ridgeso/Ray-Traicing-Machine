@@ -42,6 +42,7 @@ namespace RT::Vulkan
             VkDeviceMemory& bufferMemory) const;
 
         VkDevice getDevice() const { return device; }
+        VkInstance getInstance() const { return instance; }
         VkPhysicalDevice getPhysicalDevice() const { return physicalDevice; }
         VkSurfaceKHR getSurface() const { return surface; }
         VkQueue getGraphicsQueue() const { return graphicsQueue; }
@@ -92,6 +93,6 @@ namespace RT::Vulkan
 
     static Device createDeviceInstance();
 
-    #define DeviceInstance Device::getDeviceInstance()
+    #define DeviceInstance ::RT::Vulkan::Device::getDeviceInstance()
 
 }

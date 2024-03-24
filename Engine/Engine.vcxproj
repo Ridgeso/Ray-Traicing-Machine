@@ -37,8 +37,9 @@
     <ClCompile Include="src\External\render\Vulkan\VulkanShader.cpp" />
     <ClCompile Include="src\External\render\Vulkan\VulkanTexture.cpp" />
     <ClCompile Include="src\External\window\GlfwWindow\Utils.cpp" />
-    <ClCompile Include="src\External\Window\ImGuiBuild.cpp" />
     <ClCompile Include="src\External\Window\GlfwWindow\GlfwWindow.cpp" />
+    <ClCompile Include="src\External\window\ImGuiBackend.cpp" />
+    <ClCompile Include="src\External\window\ImGuiImpl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Engine\Core\Assert.h" />
@@ -76,6 +77,7 @@
     <ClInclude Include="src\External\Window\GlfwWindow\GlfwWindow.fwd.h" />
     <ClInclude Include="src\External\Window\GlfwWindow\GlfwWindow.h" />
     <ClInclude Include="src\External\window\GlfwWindow\Utils.h" />
+    <ClInclude Include="src\External\window\ImGuiImpl.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\RayTracing.shader" />

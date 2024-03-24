@@ -102,10 +102,10 @@ namespace RT
 
 	Application::~Application()
 	{
-		mainWindow->shutDown();
 		rtShader->destroy();
 		screenBuff.reset();
 		renderer->shutDown();
+		mainWindow->shutDown();
 	}
 
 	void Application::run()
@@ -116,9 +116,9 @@ namespace RT
 
 			update();
 
-			//mainWindow->beginUI();
-            //layout();
-			//mainWindow->endUI();
+			mainWindow->beginUI();
+            layout();
+			mainWindow->endUI();
 
 			specs.isRunning &= mainWindow->update();
 			specs.isRunning &= mainWindow->pullEvents();
@@ -130,6 +130,7 @@ namespace RT
     void Application::layout()
     {
 		ImGui::Begin("Settings");
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Text("App frame took: %.3fms", appFrameDuration);
 		ImGui::Text("CPU time: %.3fms", lastFrameDuration);
 		ImGui::Text("GPU time: %.3fms", appFrameDuration - lastFrameDuration);
@@ -232,12 +233,12 @@ namespace RT
 			framesCount = 1;
 		}
 
-		ImGui::Image(
-			(ImTextureID)frameBuffer->getAttachment(1).getTexId(),
-			viewportSize,
-			ImVec2(0, 1),
-			ImVec2(1, 0)
-		);
+		//ImGui::Image(
+		//	(ImTextureID)frameBuffer->getAttachment(1).getTexId(),
+		//	viewportSize,
+		//	ImVec2(0, 1),
+		//	ImVec2(1, 0)
+		//);
 
 		ImGui::End();
 		ImGui::PopStyleVar();

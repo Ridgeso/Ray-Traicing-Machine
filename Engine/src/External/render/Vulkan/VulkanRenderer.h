@@ -29,6 +29,10 @@ namespace RT::Vulkan
 	private:
 		void recordCommandbuffer(const uint32_t imIdx);
 		void recreateSwapchain();
+		
+		void initImGui();
+		void drawImGui();
+		void createImGuiRenderPass();
 
 	private:
 		Local<Swapchain> swapchain = nullptr;
