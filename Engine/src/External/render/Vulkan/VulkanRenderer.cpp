@@ -25,24 +25,10 @@ namespace RT::Vulkan
 		extent = VkExtent2D{ (uint32_t)size.x, (uint32_t)size.y };
 
 		auto& deviceInstance = DeviceInstance;
-		deviceInstance.init(window);
 
-		//swapchain = makeLocal<Swapchain>(extent);
 		pipeline = std::make_unique<Pipeline>();
-
-		auto pipelineLayoutInfo = VkPipelineLayoutCreateInfo{};
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 0;
-		pipelineLayoutInfo.pSetLayouts = nullptr;
-		pipelineLayoutInfo.pushConstantRangeCount = 0;
-		pipelineLayoutInfo.pPushConstantRanges = nullptr;
-
-		RT_CORE_ASSERT(
-			vkCreatePipelineLayout(deviceInstance.getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) == VK_SUCCESS,
-			"Could not create pipeline Layout");
-
+		deviceInstance.init(window);
 		recreateSwapchain();
-		//swapchain->init();
 		
 		auto triangleVert = std::vector<Vertex>{
 			{{0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}},
@@ -55,16 +41,27 @@ namespace RT::Vulkan
 		vertexBuffer = makeLocal<VulkanVertexBuffer>(
 			static_cast<uint32_t>(triangleVert.size()),
 			triangleVert.data());
+
+		auto pipelineLayoutInfo = VkPipelineLayoutCreateInfo{};
+		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutInfo.setLayoutCount = 0;
+		pipelineLayoutInfo.pSetLayouts = nullptr;
+		pipelineLayoutInfo.pushConstantRangeCount = 0;
+		pipelineLayoutInfo.pPushConstantRanges = nullptr;
+
+		RT_CORE_ASSERT(
+			vkCreatePipelineLayout(deviceInstance.getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) == VK_SUCCESS,
+			"Could not create pipeline Layout");
 		
-		//auto pipelineConfig = PipelineConfigInfo{};
-		//Pipeline::defaultPipelineConfigInfo(pipelineConfig, swapchain->getWindowExtent());
-		//pipelineConfig.renderPass = swapchain->getRenderPass();
-		//pipelineConfig.pipelineLayout = pipelineLayout;
-		//
-		//pipeline->init(
-		//	"..\\Engine\\assets\\shaders\\vert.vert.spv",
-		//	"..\\Engine\\assets\\shaders\\frag.frag.spv",
-		//	pipelineConfig);
+		auto pipelineConfig = PipelineConfigInfo{};
+		Pipeline::defaultPipelineConfigInfo(pipelineConfig);
+		pipelineConfig.renderPass = swapchain->getRenderPass();
+		pipelineConfig.pipelineLayout = pipelineLayout;
+		
+		pipeline->init(
+			"..\\Engine\\assets\\shaders\\vert.vert.spv",
+			"..\\Engine\\assets\\shaders\\frag.frag.spv",
+			pipelineConfig);
 
 		commandBuffers.resize(swapchain->getSwapChainImages().size());
 
@@ -147,6 +144,19 @@ namespace RT::Vulkan
 
 		vkCmdBeginRenderPass(commandBuffers[imIdx], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
+		auto viewport = VkViewport{};
+		viewport.x = 0;
+		viewport.y = 0;
+		viewport.width = swapchain->getSwapchainExtent().width;
+		viewport.height = swapchain->getSwapchainExtent().height;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		auto scissor = VkRect2D{};
+		scissor.offset = { 0, 0 };
+		scissor.extent = swapchain->getSwapchainExtent();
+		vkCmdSetViewport(commandBuffers[imIdx], 0, 1, &viewport);
+		vkCmdSetScissor(commandBuffers[imIdx], 0, 1, &scissor);
+
 		pipeline->bind(commandBuffers[imIdx]);
 		vertexBuffer->bind(commandBuffers[imIdx]);
 		vertexBuffer->draw(commandBuffers[imIdx]);
@@ -174,24 +184,16 @@ namespace RT::Vulkan
 		}
 		else
 		{
+			// TODO: check rendepass compatibility
 			oldSwapchain = Share<Swapchain>(swapchain.release());
 			swapchain = makeLocal<Swapchain>(extent, oldSwapchain);
 		}
-		pipeline->shutdown();
+		
 		swapchain->init();
-
-		auto pipelineConfig = PipelineConfigInfo{};
-		Pipeline::defaultPipelineConfigInfo(pipelineConfig, swapchain->getWindowExtent());
-		pipelineConfig.renderPass = swapchain->getRenderPass();
-		pipelineConfig.pipelineLayout = pipelineLayout;
-
-		pipeline->init(
-			"..\\Engine\\assets\\shaders\\vert.vert.spv",
-			"..\\Engine\\assets\\shaders\\frag.frag.spv",
-			pipelineConfig);
 
 		if (oldSwapchain)
 		{
+			RT_CORE_ASSERT(swapchain->compareFormats(*oldSwapchain), "swapchain image/depth formats has changed");
 			oldSwapchain->shutdown();
 		}
 	}

@@ -117,6 +117,12 @@ namespace RT::Vulkan
         return vkQueuePresentKHR(deviceInstance.getPresentQueue(), &presentInfo);
     }
 
+    bool Swapchain::compareFormats(const Swapchain& other) const
+    {
+        return other.swapChainDepthFormat == swapChainDepthFormat &&
+            other.swapChainImageFormat == swapChainImageFormat;
+    }
+
     void Swapchain::createSwapChain()
     {
         auto& deviceInstance = DeviceInstance;
@@ -406,7 +412,7 @@ namespace RT::Vulkan
     {
         for (const auto& availableFormat : availableFormats)
         {
-            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&
                 availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
             {
                 return availableFormat;

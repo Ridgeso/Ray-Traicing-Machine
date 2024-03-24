@@ -24,11 +24,13 @@ namespace RT::Vulkan
 
         VkResult acquireNextImage(uint32_t& imageIndex);
         VkResult submitCommandBuffers(const VkCommandBuffer& buffers, uint32_t& imageIndex);
+        bool compareFormats(const Swapchain& other) const;
 
         VkSwapchainKHR getSwapChain() const { return swapChain; }
         VkRenderPass getRenderPass() const { return renderPass; }
         const std::vector<VkFramebuffer>& getSwapChainFramebuffers() const { return swapChainFramebuffers; }
         VkExtent2D getWindowExtent() const { return windowExtent; }
+        VkExtent2D getSwapchainExtent() const { return swapChainExtent; }
         const std::vector<VkImage> getSwapChainImages() const { return swapChainImages; }
 
     private:

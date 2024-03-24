@@ -12,8 +12,6 @@ namespace RT::Vulkan
         PipelineConfigInfo(const PipelineConfigInfo&) = delete;
         PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
 
-        VkViewport viewport = {};
-        VkRect2D scissors = {};
         VkPipelineViewportStateCreateInfo viewportInfo = {};
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo = {};
         VkPipelineRasterizationStateCreateInfo rasterizationInfo = {};
@@ -21,6 +19,8 @@ namespace RT::Vulkan
         VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
         VkPipelineColorBlendStateCreateInfo colorBlendInfo = {};
         VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {};
+        std::vector<VkDynamicState> dynamicStatesEnables = {};
+        VkPipelineDynamicStateCreateInfo dynamicStateInfo = {};
         VkPipelineLayout pipelineLayout = nullptr;
         VkRenderPass renderPass = nullptr;
         uint32_t subpass = 0;
@@ -46,7 +46,7 @@ namespace RT::Vulkan
         VkPipeline getGraphicsPipeline() const { return graphicsPipeline; }
         void bind(const VkCommandBuffer commandBuffer) const;
 
-        static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo, const VkExtent2D size);
+        static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
 
     private:
         void createGraphicsPipeline(
