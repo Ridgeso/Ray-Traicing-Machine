@@ -27,6 +27,10 @@ namespace RT::Vulkan
 		void render(const Camera& camera, const Shader& shader, const VertexBuffer& vbuffer, const Scene& scene) final;
 	
 	private:
+		void recordCommandbuffer(const uint32_t imIdx);
+		void recreateSwapchain();
+
+	private:
 		Local<Swapchain> swapchain = nullptr;
 
 		VkPipelineLayout pipelineLayout{};

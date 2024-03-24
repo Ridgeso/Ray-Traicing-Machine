@@ -11,7 +11,7 @@ namespace RT::Vulkan
     class Swapchain
     {
     public:
-        Swapchain(const VkExtent2D windowExtent);
+        Swapchain(const VkExtent2D windowExtent, const Share<Swapchain>& oldSwapchain = nullptr);
         ~Swapchain() = default;
 
         Swapchain(const Swapchain&) = delete;
@@ -72,6 +72,8 @@ namespace RT::Vulkan
         std::array<VkFence, MAX_FRAMES_IN_FLIGHT> inFlightFences = {};
         std::vector<VkFence> imagesInFlight = {};
         uint8_t currentFrame = 0u;
+
+        Share<Swapchain> oldSwapchain = nullptr;
     };
 
 }

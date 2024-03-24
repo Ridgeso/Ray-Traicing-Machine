@@ -9,7 +9,7 @@
 
 namespace RT::Vulkan
 {
-
+    
     class Device
     {
     public:
@@ -42,6 +42,7 @@ namespace RT::Vulkan
             VkDeviceMemory& bufferMemory) const;
 
         VkDevice getDevice() const { return device; }
+        VkPhysicalDevice getPhysicalDevice() const { return physicalDevice; }
         VkSurfaceKHR getSurface() const { return surface; }
         VkQueue getGraphicsQueue() const { return graphicsQueue; }
         VkQueue getPresentQueue() const { return presentQueue; }
@@ -52,6 +53,7 @@ namespace RT::Vulkan
         Utils::QueueFamilyIndices getQueueFamilyIndices() const { return queueFamilyIndices; }
 
         friend static Device createDeviceInstance();
+        friend class Swapchain;
     private:
         Device() = default;
 

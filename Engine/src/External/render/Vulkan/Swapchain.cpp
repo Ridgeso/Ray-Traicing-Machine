@@ -4,8 +4,8 @@
 namespace RT::Vulkan
 {
 
-    Swapchain::Swapchain(const VkExtent2D windowExtent)
-        : windowExtent{windowExtent}
+    Swapchain::Swapchain(const VkExtent2D windowExtent, const Share<Swapchain>& oldSwapchain)
+        : windowExtent{windowExtent}, oldSwapchain{oldSwapchain}
     {
     }
 
@@ -17,6 +17,8 @@ namespace RT::Vulkan
         createDepthResources();
         createFramebuffers();
         createSyncObjects();
+
+        oldSwapchain = nullptr;
     }
 
     void Swapchain::shutdown()
@@ -80,19 +82,14 @@ namespace RT::Vulkan
     {
         const auto& deviceInstance = DeviceInstance;
 
-        if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
-        {
-            vkWaitForFences(deviceInstance.getDevice(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
-        }
-        imagesInFlight[imageIndex] = inFlightFences[currentFrame];
-
+        vkResetFences(deviceInstance.getDevice(), 1, &inFlightFences[currentFrame]);
+        
         auto submitInfo = VkSubmitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        auto waitSemaphores = std::array<VkSemaphore, 1>{ imageAvailableSemaphores[currentFrame] };
-        auto waitStages = std::array<VkPipelineStageFlags, 1>{ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        constexpr auto waitStages = std::array<VkPipelineStageFlags, 1>{ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
         submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores.data();
+        submitInfo.pWaitSemaphores = &imageAvailableSemaphores[currentFrame];
         submitInfo.pWaitDstStageMask = waitStages.data();
 
         submitInfo.commandBufferCount = 1;
@@ -102,7 +99,6 @@ namespace RT::Vulkan
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores.data();
 
-        vkResetFences(deviceInstance.getDevice(), 1, &inFlightFences[currentFrame]);
         RT_CORE_ASSERT(
             vkQueueSubmit(deviceInstance.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) == VK_SUCCESS,
             "failed to submit draw command buffer!");
@@ -113,9 +109,8 @@ namespace RT::Vulkan
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores = signalSemaphores.data();
 
-        auto swapChains = std::array<VkSwapchainKHR, 1>{ swapChain };
         presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = swapChains.data();
+        presentInfo.pSwapchains = &swapChain;
         presentInfo.pImageIndices = &imageIndex;
 
         incrementFrameCounter();
@@ -124,9 +119,11 @@ namespace RT::Vulkan
 
     void Swapchain::createSwapChain()
     {
-        const auto& deviceInstance = DeviceInstance;
+        auto& deviceInstance = DeviceInstance;
 
-        auto swapChainSupport = deviceInstance.getSwapChainSupportDetails();
+        // TODO: swapChainSupportDetails needs to be recalculated during window sizing. Probably cashing it is bad idea!
+        // auto swapChainSupport = deviceInstance.getSwapChainSupportDetails();
+        auto swapChainSupport = deviceInstance.querySwapChainSupport(deviceInstance.getPhysicalDevice());
 
         auto surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
         auto presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
@@ -172,7 +169,7 @@ namespace RT::Vulkan
         createInfo.presentMode = presentMode;
         createInfo.clipped = VK_TRUE;
 
-        createInfo.oldSwapchain = VK_NULL_HANDLE;
+        createInfo.oldSwapchain = oldSwapchain == nullptr ? VK_NULL_HANDLE : oldSwapchain->swapChain;
 
         RT_CORE_ASSERT(
             vkCreateSwapchainKHR(deviceInstance.getDevice(), &createInfo, nullptr, &swapChain) == VK_SUCCESS,
