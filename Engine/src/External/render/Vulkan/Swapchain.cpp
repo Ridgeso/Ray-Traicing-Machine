@@ -44,9 +44,9 @@ namespace RT::Vulkan
             vkFreeMemory(device, depthImageMemorys[i], nullptr);
         }
 
-        for (auto framebuffer : swapChainFramebuffers)
+        for (auto& framebuffer : framebuffers)
         {
-            vkDestroyFramebuffer(device, framebuffer, nullptr);
+            framebuffer.shutdown();
         }
 
         vkDestroyRenderPass(device, renderPass, nullptr);
@@ -121,6 +121,14 @@ namespace RT::Vulkan
     {
         return other.swapChainDepthFormat == swapChainDepthFormat &&
             other.swapChainImageFormat == swapChainImageFormat;
+    }
+
+    VkFormat Swapchain::findDepthFormat()
+    {
+        return DeviceInstance.findSupportedFormat(
+            { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
     }
 
     void Swapchain::createSwapChain()
@@ -330,27 +338,11 @@ namespace RT::Vulkan
 
     void Swapchain::createFramebuffers()
     {
-        swapChainFramebuffers.resize(swapChainImages.size());
+        framebuffers.resize(swapChainImages.size());
         for (size_t i = 0; i < swapChainImages.size(); i++)
         {
-            auto attachments = std::array<VkImageView, 1>{ swapChainImageViews[i] };// , depthImageViews[i] };
-
-            auto framebufferInfo = VkFramebufferCreateInfo{};
-            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferInfo.renderPass = renderPass;
-            framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-            framebufferInfo.pAttachments = attachments.data();
-            framebufferInfo.width = swapChainExtent.width;
-            framebufferInfo.height = swapChainExtent.height;
-            framebufferInfo.layers = 1;
-
-            RT_CORE_ASSERT(
-                vkCreateFramebuffer(
-                    DeviceInstance.getDevice(),
-                    &framebufferInfo,
-                    nullptr,
-                    &swapChainFramebuffers[i]) == VK_SUCCESS,
-                "failed to create framebuffer!");
+            auto attachments = std::vector<VkImageView>{ swapChainImageViews[i] }; //, depthImageViews[i] };
+            framebuffers[i].init(attachments, renderPass, swapChainExtent);
         }
     }
 
@@ -403,14 +395,6 @@ namespace RT::Vulkan
     void Swapchain::incrementFrameCounter()
     {
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-    }
-
-    VkFormat Swapchain::findDepthFormat()
-    {
-        return DeviceInstance.findSupportedFormat(
-            { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
-            VK_IMAGE_TILING_OPTIMAL,
-            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
     }
 
     VkSurfaceFormatKHR Swapchain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)

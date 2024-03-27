@@ -29,6 +29,7 @@
     <ClCompile Include="src\External\render\OpenGl\OpenGlBuffer.cpp" />
     <ClCompile Include="src\External\render\Vulkan\Device.cpp" />
     <ClCompile Include="src\External\render\Vulkan\Pipeline.cpp" />
+    <ClCompile Include="src\External\render\Vulkan\RenderPass.cpp" />
     <ClCompile Include="src\External\render\Vulkan\Swapchain.cpp" />
     <ClCompile Include="src\External\render\Vulkan\utils\Debug.cpp" />
     <ClCompile Include="src\External\render\Vulkan\VulkanBuffer.cpp" />
@@ -65,6 +66,7 @@
     <ClInclude Include="src\Engine\Render\Scene.h" />
     <ClInclude Include="src\External\render\OpenGl\OpenGlBuffer.h" />
     <ClInclude Include="src\External\render\Vulkan\Pipeline.h" />
+    <ClInclude Include="src\External\render\Vulkan\RenderPass.h" />
     <ClInclude Include="src\External\render\Vulkan\Swapchain.h" />
     <ClInclude Include="src\External\render\Vulkan\Device.h" />
     <ClInclude Include="src\External\render\Vulkan\utils\Debug.h" />

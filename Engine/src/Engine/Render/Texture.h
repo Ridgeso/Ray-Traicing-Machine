@@ -7,7 +7,7 @@ namespace RT
 
 	enum class ImageFormat
 	{
-		R8, RGB8, RGBA8, RGBA32F
+		R8, RGB8, RGBA8, RGBA32F, Stencil
 	};
 
 	struct Texture

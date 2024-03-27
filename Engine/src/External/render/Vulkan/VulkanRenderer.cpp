@@ -192,7 +192,7 @@ namespace RT::Vulkan
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = swapchain->getRenderPass();
-		renderPassInfo.framebuffer = swapchain->getSwapChainFramebuffers()[imIdx];
+		renderPassInfo.framebuffer = swapchain->getFramebuffers()[imIdx].getFrameBuffer();
 		//renderPassInfo.renderPass = igRenderPass;
 		//renderPassInfo.framebuffer = frames[imIdx].Framebuffer;
 

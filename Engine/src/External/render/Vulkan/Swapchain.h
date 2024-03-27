@@ -3,6 +3,8 @@
 #include <vulkan/vulkan.h>
 
 #include "Device.h"
+#include "RenderPass.h"
+#include "VulkanFrameBuffer.h"
 #include "utils/Utils.h"
 
 namespace RT::Vulkan
@@ -25,10 +27,11 @@ namespace RT::Vulkan
         VkResult acquireNextImage(uint32_t& imageIndex);
         VkResult submitCommandBuffers(const VkCommandBuffer& buffers, uint32_t& imageIndex);
         bool compareFormats(const Swapchain& other) const;
+        static VkFormat findDepthFormat();
 
         VkSwapchainKHR getSwapChain() const { return swapChain; }
         VkRenderPass getRenderPass() const { return renderPass; }
-        const std::vector<VkFramebuffer>& getSwapChainFramebuffers() const { return swapChainFramebuffers; }
+        const std::vector<VulkanFrameBuffer>& getFramebuffers() const { return framebuffers; }
         VkExtent2D getWindowExtent() const { return windowExtent; }
         VkExtent2D getSwapchainExtent() const { return swapChainExtent; }
         const std::vector<VkImage>& getSwapChainImages() const { return swapChainImages; }
@@ -49,7 +52,6 @@ namespace RT::Vulkan
         bool compareSwapFormats(const Swapchain& swapChain) const;
         void incrementFrameCounter();
     
-        static VkFormat findDepthFormat();
         static VkSurfaceFormatKHR chooseSwapSurfaceFormat(
             const std::vector<VkSurfaceFormatKHR>& availableFormats);
         static VkPresentModeKHR chooseSwapPresentMode(
@@ -59,7 +61,9 @@ namespace RT::Vulkan
         static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
         
         VkSwapchainKHR swapChain = {};
+        RenderPass renderPassNew = {};
         VkRenderPass renderPass = {};
+        std::vector<VulkanFrameBuffer> framebuffers = {};
         std::vector<VkFramebuffer> swapChainFramebuffers = {};
 
         VkFormat swapChainImageFormat = {};

@@ -40,6 +40,7 @@ namespace RT::Vulkan
             const VkMemoryPropertyFlags properties,
             VkBuffer& buffer,
             VkDeviceMemory& bufferMemory) const;
+        uint32_t findMemoryType(const uint32_t typeFilter, const VkMemoryPropertyFlags properties) const;
 
         VkDevice getDevice() const { return device; }
         VkInstance getInstance() const { return instance; }
@@ -68,7 +69,6 @@ namespace RT::Vulkan
         bool isDeviceSuitable(VkPhysicalDevice phyDev);
         Utils::QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phyDev) const;
         Utils::SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice phyDev);
-        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
         static bool checkDeviceExtensionSupport(VkPhysicalDevice phyDev);
 

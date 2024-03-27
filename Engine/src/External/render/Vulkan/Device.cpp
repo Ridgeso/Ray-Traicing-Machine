@@ -103,6 +103,20 @@ namespace RT::Vulkan
         vkBindBufferMemory(device, buffer, bufferMemory, 0);
     }
 
+    uint32_t Device::findMemoryType(const uint32_t typeFilter, const VkMemoryPropertyFlags properties) const
+    {
+        auto memProperties = VkPhysicalDeviceMemoryProperties{};
+        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+        for (uint32_t memType = 0u; memType < memProperties.memoryTypeCount; memType++)
+        {
+            if ((typeFilter & (1 << memType)) && (memProperties.memoryTypes[memType].propertyFlags & properties) == properties)
+            {
+                return memType;
+            }
+        }
+        RT_CORE_ASSERT(false, "failed to find suitable memory type!");
+    }
+
     Device createDeviceInstance()
     {
         return Device();
@@ -322,20 +336,6 @@ namespace RT::Vulkan
                 swapChainSupportDetails.presentModes.data());
         }
         return swapChainSupportDetails;
-    }
-
-    uint32_t Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const
-    {
-        auto memProperties = VkPhysicalDeviceMemoryProperties{};
-        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
-        for (uint32_t memType = 0u; memType < memProperties.memoryTypeCount; memType++)
-        {
-            if ((typeFilter & (1 << memType)) && (memProperties.memoryTypes[memType].propertyFlags & properties) == properties)
-            {
-                return memType;
-            }
-        }
-        RT_CORE_ASSERT(false, "failed to find suitable memory type!");
     }
 
     bool Device::checkDeviceExtensionSupport(VkPhysicalDevice phyDev)
